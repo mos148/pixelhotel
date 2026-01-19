@@ -1,0 +1,207 @@
+/* ===== Base ===== */
+:root{
+  --black:#0b0b0b; --bg:#0e0f13; --bg2:#101521; --text:#f2f4fa; --muted:#a5aec7;
+  --brand:#ffce00; --brand-dark:#ffb300; --green:#39cf6b; --green-d:#2bb358;
+  --blue:#2b7df1; --blue-d:#1f63c2; --panel:#151a29; --border:#273454;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body.pixelhotel{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.container{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* ===== Topbar ===== */
+.topbar{background:#000;border-bottom:3px solid #242424;box-shadow:0 2px 0 rgba(255,255,255,.06) inset}
+.topbar .container{display:flex;align-items:center;gap:12px;padding:10px 10px}
+.hero-logo {display: block;margin: 0 auto 12px;width: 200px;image-rendering: pixelated; filter: drop-shadow(0 4px 0 #000) drop-shadow(0 8px 8px rgba(0,0,0,.5));}
+.mini-login{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mini-login input[type="email"], .mini-login input[type="password"]{
+  background:#0f1424;border:1px solid #2a3350;color:#e6e9f0;border-radius:8px;padding:8px 10px;min-width:180px
+}
+.mini-login .remember{color:#aeb6cd;font-size:12px;display:flex;align-items:center;gap:6px}
+
+.btn{display:inline-block;border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;text-align:center;box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn-dark{background:#202737;color:#fff}
+.btn-green{background:linear-gradient(#3fe07a,#35c96c);color:#07210f;border:2px solid #1e7f47}
+.btn-big{font-size:22px;line-height:1.1;border-radius:14px;padding:14px 18px}
+.btn-facebook{background:linear-gradient(var(--blue),var(--blue-d));color:#fff;border:2px solid #0e4c9b;margin-top:12px}
+
+/* ===== Hero ===== */
+.hero{background:radial-gradient(1200px 700px at 50% 0%,#123f6b 0%, #1a6fb4 30%, #1f95d7 50%, #a8e6ff 100%);border-bottom:3px solid rgba(0,0,0,.25)}
+.hero-inner{padding:22px 16px 28px}
+.hero-title{text-align:center;font-size:22px;font-weight:800;letter-spacing:.2px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.3);margin:8px 0 16px}
+.hero-grid{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+
+.cta-panel{background:#0f1527;border:1px solid #203055;border-radius:12px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.cta-title{background:#0b1b2e;color:#cde0ff;border:1px solid #2a3b63;border-radius:10px;padding:8px 10px;margin-bottom:12px;font-weight:700}
+
+.room{position:relative;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);padding:10px}
+.room-canvas{position:relative;height:320px;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));border-radius:10px;overflow:hidden}
+/* Diamantes de fondo */
+.room-canvas::before{content:"";position:absolute;inset:-40px;opacity:.25;background:
+  radial-gradient( circle at 20% 20%, rgba(255,255,255,.35) 0 2px, transparent 2px) 0 0/64px 64px,
+  linear-gradient(135deg, rgba(255,255,255,.12) 25%, transparent 25% 75%, rgba(255,255,255,.12) 75%) 0 0/64px 64px;
+  transform:skewY(-12deg) rotate(-12deg);
+
+
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}}
+.ph-footer {
+  background: #0b0b0b;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+
+.ph-footer__grid {
+  margin-left: 20px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.2fr;
+  gap: 18px;
+  padding: 18px 0;
+}
+
+.ph-footer__title {
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  color: rgba(255,255,255,0.92);
+}
+
+.ph-footer__desc {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.62);
+  max-width: 380px;
+}
+
+.ph-footer__links {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.ph-footer__links a {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+}
+.ph-footer__links a:hover {
+  text-decoration: underline;
+  color: rgba(255,255,255,0.92);
+}
+
+.ph-footer__meta {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.70);
+}
+
+.ph-footer__badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+}
+
+.ph-footer__row span {
+  color: rgba(255,255,255,0.55);
+}
+.ph-footer__row strong {
+  color: rgba(255,255,255,0.90);
+  font-weight: 800;
+}
+
+.ph-footer__bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: #070707;
+}
+
+.ph-footer__bottomInner {
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
+
+.ph-footer__small {
+  margin-right: 8px;
+  color: rgba(255,255,255,0.45);
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .ph-footer__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.register-box{
+  width: 320px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(10, 14, 26, 0.85);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+}
+
+.register-title{
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 12px;
+}
+
+.register-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100px;
+  border-radius: 12px;
+
+  background: linear-gradient(180deg, #56f2a2, #2ecf7b);
+  border: 2px solid rgba(0,0,0,0.22);
+
+  font-weight: 900;
+  font-size: 22px;
+  color: #072112;
+  text-decoration: none;
+
+  box-shadow: 0 6px 0 rgba(0,0,0,0.22), 0 14px 24px rgba(0,0,0,0.30);
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.register-btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.register-btn:active{
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.22), 0 10px 18px rgba(0,0,0,0.28);
+}
+
+.topbar{
+  background: #070707;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+}

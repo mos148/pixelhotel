@@ -1,0 +1,70 @@
+/* ===== Base global (tipografía, fondo, utilidades, botones) ===== */
+
+:root{
+  --bg: #050505;
+  --panel: rgba(10, 14, 26, 0.88);
+  --border: rgba(255,255,255,0.12);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.70);
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  height: 100%;
+}
+
+body.pixelhotel{
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container{
+  width: min(1100px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+/* Logo pixelado */
+.hero-logo{
+  height: 70px;
+  image-rendering: pixelated;
+  display: block;
+}
+
+/* Links */
+a{ color: inherit; }
+
+/* ===== Buttons (reutilizable) ===== */
+.btn{
+  border: 0;
+  cursor: pointer;
+  font-weight: 900;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-full{ width: 100%; }
+
+.btn-green{
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #56f2a2, #2ecf7b);
+  border: 2px solid rgba(0,0,0,0.22);
+  color: #072112;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.22), 0 14px 24px rgba(0,0,0,0.30);
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.btn-green:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.btn-green:active{
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.22), 0 10px 18px rgba(0,0,0,0.28);
+}

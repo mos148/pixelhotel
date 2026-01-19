@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PixelHotel — Home</title>
+  <link rel="icon" href="assets/favicon.png" type="image/png" />
+
+  <!-- Reutilizas tus css -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+
+<body class="pixelhotel">
+
+  <!-- Header simple y pro -->
+  <header class="topbar topbar--home">
+    <div class="container topbar-inner">
+      <a href="./home.html" class="brand" aria-label="Inicio PixelHotel">
+        <img src="logo.png" alt="PixelHotel" class="hero-logo" />
+      </a>
+
+      <nav class="topnav" aria-label="Navegación">
+        <a class="topnav-link is-active" href="./home.html">Home</a>
+        <a class="topnav-link" href="./hotel.html">Hotel</a>
+        <button id="logoutBtn" class="btn btn-dark btn-sm" type="button">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="home">
+    <div class="container home-grid">
+
+      <!-- ===== LEFT ===== -->
+      <section class="card panel profile" aria-label="Perfil">
+        <div class="profile-head">
+          <div class="avatar-frame" aria-hidden="true">
+            <img src="assets/avatar_s.png" alt="" />
+          </div>
+
+          <div class="profile-meta">
+            <div class="chip chip-green">Conectado</div>
+            <h1 class="profile-name">
+              <span id="meNick">—</span>
+            </h1>
+            <p class="muted">Bienvenido a PixelHotel. Tu zona de inicio.</p>
+          </div>
+        </div>
+
+        <!-- Botón grande estilo Habbo -->
+        <div class="enter-block">
+          <button id="enterBtn" class="btn btn-green btn-xl" type="button">
+            Entrar al Hotel
+            <span class="chev">››</span>
+          </button>
+
+          <div class="enter-sub">
+            <span class="muted">Consejo:</span> prueba el chat y muévete con otros jugadores.
+          </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="quick">
+          <h2 class="panel-title">Acciones rápidas</h2>
+          <div class="quick-grid">
+            <a class="quick-item" href="./hotel.html">
+              <span class="q-ico">🎮</span>
+              <span class="q-txt">
+                <strong>Ir al hotel</strong>
+                <small>Entrar al mundo</small>
+              </span>
+            </a>
+
+            <a class="quick-item" href="./index.html">
+              <span class="q-ico">🔐</span>
+              <span class="q-txt">
+                <strong>Login</strong>
+                <small>Volver al inicio</small>
+              </span>
+            </a>
+
+            <a class="quick-item" href="#" aria-disabled="true">
+              <span class="q-ico">🧰</span>
+              <span class="q-txt">
+                <strong>Ajustes</strong>
+                <small>Próximamente</small>
+              </span>
+            </a>
+
+            <a class="quick-item" href="#" aria-disabled="true">
+              <span class="q-ico">🧑‍🤝‍🧑</span>
+              <span class="q-txt">
+                <strong>Amigos</strong>
+                <small>Próximamente</small>
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== RIGHT ===== -->
+      <section class="right-col" aria-label="Panel derecho">
+
+        <!-- Latest news -->
+        <article class="card panel news">
+          <div class="panel-head">
+            <h2 class="panel-title">Latest news</h2>
+            <span class="chip">Prototipo</span>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">✨ Multijugador + chat ya funcionando</div>
+            <div class="news-meta">Actualizado hoy</div>
+            <p class="news-text">
+              Ya puedes ver otros avatares, moverte y chatear en tiempo real con Socket.IO.
+            </p>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">🧭 Movimiento isométrico (A*)</div>
+            <div class="news-meta">Base técnica</div>
+            <p class="news-text">
+              Rejilla isométrica + pathfinding con EasyStar. Próximo: colisiones reales con muebles.
+            </p>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">🎨 Próximo objetivo: pulir UI</div>
+            <div class="news-meta">Frontend</div>
+            <p class="news-text">
+              Index/Home/Hotel con estética retro
+            </p>
+          </div>
+        </article>
+
+        <!-- Online / Stats -->
+        <aside class="card panel stats">
+          <div class="panel-head">
+            <h2 class="panel-title">Estado del servidor</h2>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="stat-label">Sesión</div>
+              <div class="stat-value" id="meSession">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Online</div>
+              <div class="stat-value" id="onlineCount">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Versión</div>
+              <div class="stat-value">0.1</div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <span class="chip chip-outline">TS</span>
+            <span class="chip chip-outline">Express</span>
+            <span class="chip chip-outline">Postgres</span>
+            <span class="chip chip-outline">Socket.IO</span>
+            <span class="chip chip-outline">PixiJS</span>
+          </div>
+
+          <div class="mini-note muted">
+            Este juego se encuentra en fase de prueba. No almacena datos personales ni utiliza cookies.
+          </div>
+        </aside>
+
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer footer--home">
+    <div class="container footer-mini">
+      <span>© PixelHotel — Miguel Ojeda Sánchez</span>
+      <span class="dot">•</span>
+      <span>Prototipo</span>
+      <span class="dot">•</span>
+      <a class="footer-link" href="#" aria-disabled="true">Privacidad</a>
+      <span class="dot">•</span>
+      <a class="footer-link" href="#" aria-disabled="true">Términos</a>
+    </div>
+  </footer>
+
+  <script>
+    // 1) Proteger home: si no hay sesión -> index
+    async function loadMe() {
+      try {
+        const res = await fetch("/me", { credentials: "include" });
+
+        // Si la respuesta no es 2xx, redirigimos al login
+        if (!res.ok) {
+          console.warn("/me responded with non-ok status:", res.status);
+          window.location.href = "/index.html";
+          return;
+        }
+
+        // Intentar parsear JSON (puede fallar si el servidor devuelve HTML)
+        let json;
+        try {
+          json = await res.json();
+        } catch (err) {
+          console.error("Error parsing /me response as JSON:", err);
+          window.location.href = "/index.html";
+          return;
+        }
+
+        // Validar payload
+        if (!json.ok || !json.user?.nickname) {
+          console.warn("/me returned no user or nickname:", json);
+          window.location.href = "/index.html";
+          return;
+        }
+
+        document.getElementById("meNick").textContent = json.user.nickname;
+        document.getElementById("meSession").textContent = "Activa";
+      } catch (err) {
+        console.error("Network or unexpected error while loading /me:", err);
+        window.location.href = "/index.html";
+      }
+    }
+
+    // 2) Online (si ya tienes evento online:update en socket, genial; si no, lo ponemos “—”)
+    // Aquí lo dejamos simple: si más adelante quieres, lo conectamos por socket también.
+    // Por ahora, el /hotel ya lo muestra, home solo enseña un placeholder.
+    document.getElementById("onlineCount").textContent = "—";
+
+    // 3) Botón entrar
+    const enterBtn = document.getElementById("enterBtn");
+    if (enterBtn) {
+      enterBtn.addEventListener("click", () => {
+        window.location.href = "/hotel.html";
+      });
+    } else {
+      console.warn("enterBtn not found in DOM");
+    }
+
+    // 4) Logout
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        await fetch("/logout", { method: "POST", credentials: "include" });
+        window.location.href = "/index.html";
+      });
+    } else {
+      console.warn("logoutBtn not found in DOM");
+    }
+
+    // 5) “estado” (demo visual)
+    const statusInput = document.getElementById("statusInput");
+    const statusBtn = document.getElementById("statusBtn");
+    const statusMsg = document.getElementById("statusMsg");
+
+    if (statusBtn && statusInput && statusMsg) {
+      statusBtn.addEventListener("click", () => {
+        if (!(statusInput instanceof HTMLInputElement)) return;
+        const v = statusInput.value.trim();
+        if (!v) return;
+        statusMsg.textContent = `Estado enviado: "${v}" (demo)`;
+        statusInput.value = "";
+        setTimeout(() => (statusMsg.textContent = ""), 2500);
+      });
+    } else {
+      // Elementos opcionales no presentes en la página
+      console.info("status controls not present on this page");
+    }
+
+    loadMe();
+  </script>
+
+</body>
+</html>

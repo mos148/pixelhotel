@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>PixelHotel - Juego</title>
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas { display: block; }
+
+    #chatBar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 20px;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #chatInput {
+      pointer-events: auto;
+      width: 700px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 2px solid #222;
+      outline: none;
+      background: #fff;
+      color: #111;
+    }
+    #chatInput::placeholder { color: #aaa; }
+
+    #chatFeed {
+      position: fixed;
+      left: 750px;
+      top: 12px;
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .chatMsg {
+      align-self: flex-start;
+      max-width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      border: 2px solid rgba(0,0,0,0.15);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font: 14px/1.2 Arial, sans-serif;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+      opacity: 1;
+      transition: opacity 400ms ease;
+      word-wrap: break-word;
+    }
+    .chatMsg .name { font-weight: 700; margin-right: 6px; }
+    .chatMsg.fadeOut { opacity: 0; }
+
+    #onlineHud {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      padding: 6px 10px;
+      font: 13px Arial, sans-serif;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      pointer-events: none;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatFeed" aria-live="polite"></div>
+  <div id="chatBar">
+    <input id="chatInput" type="text" maxlength="60" placeholder="Escribe aquí..." autocomplete="off" />
+  </div>
+  <div id="onlineHud">Online: —</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/easystarjs@0.4.4/bin/easystar-0.4.4.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    const socket = io({ withCredentials: true });
+    const otherPlayers = new Map(); // socketId -> { container, tileX, tileY, path, stepIndex }
+    let mySocketId = null;
+
+    const chatInput = document.getElementById("chatInput");
+    const chatFeed  = document.getElementById("chatFeed");
+    const onlineHud = document.getElementById("onlineHud");
+
+    // ====== APP ======
+    const app = new PIXI.Application({
+      resizeTo: window,
+      backgroundColor: 0x000000,
+      antialias: false,
+      autoDensity: true,
+      resolution: window.devicePixelRatio || 1
+    });
+    document.body.appendChild(app.view);
+
+    // ====== LOAD /me ======
+    let myNickname = "";
+
+    async function loadMe() {
+      try {
+        const res = await fetch("/me", { method: "GET", credentials: "include" });
+        const json = await res.json();
+        if (!json.ok || !json.user?.nickname) {
+          window.location.href = "/index.html";
+          return;
+        }
+        myNickname = json.user.nickname;
+        // actualiza el texto del nombre cuando ya existe
+        myNameText.text = myNickname;
+      } catch (err) {
+        console.error("No pude cargar /me", err);
+        window.location.href = "/index.html";
+      }
+    }
+
+    // ====== ISO SETTINGS ======
+    const tileW = 64, tileH = 32, cols = 16, rows = 12;
+    let originX = window.innerWidth / 2.5;
+    let originY = 200;
+
+    window.addEventListener("resize", () => {
+      originX = window.innerWidth / 2;
+    });
+
+    function tileToScreen(tx, ty) {
+      const x = (tx - ty) * (tileW / 2) + originX;
+      const y = (tx + ty) * (tileH / 2) + originY;
+      return { x, y };
+    }
+
+    function screenToTile(sx, sy) {
+      const x = sx - originX;
+      const y = sy - originY;
+      const tx = (y / (tileH / 2) + x / (tileW / 2)) / 2;
+      const ty = (y / (tileH / 2) - x / (tileW / 2)) / 2;
+      return { tx, ty };
+    }
+
+    // ====== WALKABLE MAP ======
+    const walkable = Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => true)
+    );
+
+    walkable[4][6] = false;
+    walkable[4][7] = false;
+    walkable[5][6] = false;
+    walkable[6][10] = false;
+    walkable[7][10] = false;
+
+    const gridPF = Array.from({ length: rows }, (_, y) =>
+      Array.from({ length: cols }, (_, x) => (walkable[y][x] ? 0 : 1))
+    );
+
+    const easystar = new EasyStar.js();
+    easystar.setGrid(gridPF);
+    easystar.setAcceptableTiles([0]);
+    easystar.disableDiagonals();
+
+    // ====== LAYERS ======
+    const world = new PIXI.Container();
+    app.stage.addChild(world);
+
+    const floorLayer = new PIXI.Container();
+    const entityLayer = new PIXI.Container();
+    world.addChild(floorLayer);
+    world.addChild(entityLayer);
+
+    // ====== DRAW ISO GRID ======
+    const grid = new PIXI.Graphics();
+    for (let ty = 0; ty < rows; ty++) {
+      for (let tx = 0; tx < cols; tx++) {
+        const canWalk = walkable[ty][tx];
+        const p = tileToScreen(tx, ty);
+
+        grid.lineStyle(1, 0x444444, 1);
+        grid.beginFill(canWalk ? 0x222222 : 0x552222, 1);
+
+        grid.moveTo(p.x, p.y - tileH / 2);
+        grid.lineTo(p.x + tileW / 2, p.y);
+        grid.lineTo(p.x, p.y + tileH / 2);
+        grid.lineTo(p.x - tileW / 2, p.y);
+        grid.closePath();
+        grid.endFill();
+      }
+    }
+    floorLayer.addChild(grid);
+
+    // ====== AVATAR LOCAL ======
+    const avatarContainer = new PIXI.Container();
+    entityLayer.addChild(avatarContainer);
+
+    // Texto del nombre (lo actualiza loadMe())
+    const myNameText = new PIXI.Text("", {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fill: 0xffffff,
+      stroke: 0x000000,
+      strokeThickness: 3
+    });
+    myNameText.anchor.set(0.5, 1);
+    myNameText.y = -85;
+    avatarContainer.addChild(myNameText);
+
+    // Sombra
+    const shadow = new PIXI.Graphics();
+    shadow.beginFill(0x000000, 0.35);
+    shadow.drawEllipse(0, 0, 14, 7);
+    shadow.endFill();
+    shadow.y = 0;
+    avatarContainer.addChild(shadow);
+
+    // ✅ Texturas 4 direcciones (claves n/e/s/w)
+    const avatarTextures = {
+      n: PIXI.Texture.from("/assets/avatar_n.png"),
+      e: PIXI.Texture.from("/assets/avatar_e.png"),
+      s: PIXI.Texture.from("/assets/avatar_s.png"),
+      w: PIXI.Texture.from("/assets/avatar_w.png"),
+    };
+
+    // ✅ sprite inicial correcto
+    const avatar = new PIXI.Sprite(avatarTextures.s);
+    avatarContainer.addChild(avatar);
+
+    avatar.width = 95;
+    avatar.height = 95;
+    avatar.anchor.set(0.5, 0.9);
+
+    // Dirección actual
+    let currentDir = "s";
+
+    function setAvatarDir(dir) {
+      if (!avatarTextures[dir]) return;
+      if (dir === currentDir) return;
+      currentDir = dir;
+      avatar.texture = avatarTextures[dir];
+    }
+
+    function dirFromTo(ax, ay, bx, by) {
+      if (bx > ax) return "s";
+      if (bx < ax) return "n";
+      if (by > ay) return "w";
+      if (by < ay) return "e"; 
+      return currentDir;
+    }
+
+    let avatarTileX = 0, avatarTileY = 0;
+
+    function placeAvatarOnTile(tx, ty) {
+      avatarTileX = tx;
+      avatarTileY = ty;
+      const p = tileToScreen(tx, ty);
+      avatarContainer.x = p.x;
+      avatarContainer.y = p.y;
+    }
+    placeAvatarOnTile(0, 0);
+
+    // ====== FURNITURE ======
+    function createFurnitureOnTile(tx, ty) {
+      const f = new PIXI.Graphics();
+      f.beginFill(0x3399ff);
+      f.drawRect(-18, -40, 36, 40);
+      f.endFill();
+      const p = tileToScreen(tx, ty);
+      f.x = p.x;
+      f.y = p.y;
+      return f;
+    }
+    entityLayer.addChild(createFurnitureOnTile(3, 3));
+
+    // ====== PATH LOCAL ======
+    let path = [];
+    let stepIndex = 0;
+
+    // ====== DRAG CAMERA ======
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let worldStart = { x: 0, y: 0 };
+
+    app.stage.interactive = true;
+    app.stage.hitArea = app.screen;
+
+    app.stage.on("pointerdown", (e) => {
+      isDragging = true;
+      dragStart = { x: e.data.global.x, y: e.data.global.y };
+      worldStart = { x: world.x, y: world.y };
+    });
+
+    app.stage.on("pointerup", () => { isDragging = false; });
+    app.stage.on("pointerupoutside", () => { isDragging = false; });
+
+    app.stage.on("pointermove", (e) => {
+      if (!isDragging) return;
+      const dx = e.data.global.x - dragStart.x;
+      const dy = e.data.global.y - dragStart.y;
+      world.x = worldStart.x + dx;
+      world.y = worldStart.y + dy;
+    });
+
+    // ====== CLICK TO MOVE (local + notify server) ======
+    app.stage.on("pointerdown", (event) => {
+      const pos = event.data.getLocalPosition(app.stage);
+      const t = screenToTile(pos.x, pos.y);
+
+      const tileX = Math.floor(t.tx + 0.5);
+      const tileY = Math.floor(t.ty + 0.5);
+
+      if (tileX < 0 || tileX >= cols || tileY < 0 || tileY >= rows) return;
+      if (!walkable[tileY][tileX]) return;
+
+      easystar.findPath(avatarTileX, avatarTileY, tileX, tileY, (foundPath) => {
+        if (!foundPath) return;
+        path = foundPath;
+        stepIndex = 0;
+      });
+      easystar.calculate();
+
+      socket.emit("player:move", { toX: tileX, toY: tileY });
+    });
+
+    // ====== TICKER ======
+    app.ticker.add(() => {
+      entityLayer.children.sort((a, b) => a.y - b.y);
+
+      // remotos
+      for (const remote of otherPlayers.values()) {
+        if (!remote.path || remote.path.length === 0) continue;
+
+        if (remote.stepIndex >= remote.path.length) {
+          remote.path = [];
+          continue;
+        }
+
+        const step = remote.path[remote.stepIndex];
+        const p = tileToScreen(step.x, step.y);
+
+        const speed = 0.75;
+        const dx = p.x - remote.container.x;
+        const dy = p.y - remote.container.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 0.8) {
+          remote.container.x = p.x;
+          remote.container.y = p.y;
+          remote.tileX = step.x;
+          remote.tileY = step.y;
+          remote.stepIndex++;
+        } else {
+          remote.container.x += (dx / dist) * speed;
+          remote.container.y += (dy / dist) * speed;
+        }
+      }
+
+      // local
+      if (!path || path.length === 0) return;
+      if (stepIndex >= path.length) { path = []; return; }
+
+      const step = path[stepIndex];
+
+      // ✅ girar según el siguiente tile
+      const dir = dirFromTo(avatarTileX, avatarTileY, step.x, step.y);
+      setAvatarDir(dir);
+
+      const p = tileToScreen(step.x, step.y);
+
+      const speed = 0.75;
+      const dx = p.x - avatarContainer.x;
+      const dy = p.y - avatarContainer.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 0.8) {
+        placeAvatarOnTile(step.x, step.y);
+        stepIndex++;
+        return;
+      }
+
+      avatarContainer.x += (dx / dist) * speed;
+      avatarContainer.y += (dy / dist) * speed;
+    });
+
+    // ====== CHAT ======
+    const MAX_MESSAGES = 6;
+    const MESSAGE_LIFETIME = 6000;
+
+    function pushChatMessage(text, nickname) {
+      const msg = document.createElement("div");
+      msg.className = "chatMsg";
+      msg.innerHTML = `<span class="name"></span><span class="text"></span>`;
+      msg.querySelector(".name").textContent = nickname + ": ";
+      msg.querySelector(".text").textContent = text;
+
+      chatFeed.appendChild(msg);
+
+      while (chatFeed.children.length > MAX_MESSAGES) {
+        chatFeed.removeChild(chatFeed.firstElementChild);
+      }
+
+      setTimeout(() => {
+        msg.classList.add("fadeOut");
+        setTimeout(() => msg.remove(), 450);
+      }, MESSAGE_LIFETIME);
+    }
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      socket.emit("chat:send", { text, nickname: myNickname });
+      chatInput.value = "";
+    });
+
+    socket.on("chat:msg", (msg) => {
+      pushChatMessage(msg.text, msg.nickname);
+    });
+
+    socket.on("online:update", ({ count }) => {
+      onlineHud.textContent = `Jugadores Online: ${count}`;
+    });
+
+    // ====== REMOTES ======
+    function createRemotePlayer(p) {
+      const c = new PIXI.Container();
+
+      const sh = new PIXI.Graphics();
+      sh.beginFill(0x000000, 0.28);
+      sh.drawEllipse(0, 0, 14, 7);
+      sh.endFill();
+      c.addChild(sh);
+
+      const s = PIXI.Sprite.from("/assets/avatar_s.png"); // remoto simple, aún sin giro
+      s.anchor.set(0.5, 0.9);
+      s.width = 90;
+      s.height = 100;
+      c.addChild(s);
+
+      const label = new PIXI.Text(p.nickname, {
+        fontFamily: "Arial",
+        fontSize: 12,
+        fill: 0xffffff,
+        stroke: 0x000000,
+        strokeThickness: 3
+      });
+      label.anchor.set(0.5, 1);
+      label.y = -85;
+      c.addChild(label);
+
+      const pos = tileToScreen(p.x, p.y);
+      c.x = pos.x;
+      c.y = pos.y;
+
+      entityLayer.addChild(c);
+
+      otherPlayers.set(p.socketId, {
+        container: c,
+        tileX: p.x,
+        tileY: p.y,
+        path: [],
+        stepIndex: 0
+      });
+    }
+
+    function removeRemotePlayer(socketId) {
+      const obj = otherPlayers.get(socketId);
+      if (!obj) return;
+      entityLayer.removeChild(obj.container);
+      obj.container.destroy({ children: true });
+      otherPlayers.delete(socketId);
+    }
+
+    socket.emit("player:hello");
+
+    socket.on("players:init", (data) => {
+      mySocketId = data.me.socketId;
+      for (const p of data.players) {
+        if (p.socketId === mySocketId) continue;
+        if (!otherPlayers.has(p.socketId)) createRemotePlayer(p);
+      }
+    });
+
+    socket.on("player:joined", (p) => {
+      if (p.socketId === mySocketId) return;
+      if (!otherPlayers.has(p.socketId)) createRemotePlayer(p);
+    });
+
+    socket.on("player:left", ({ socketId }) => {
+      removeRemotePlayer(socketId);
+    });
+
+    socket.on("player:moved", ({ socketId, toX, toY }) => {
+      if (socketId === mySocketId) return;
+
+      const remote = otherPlayers.get(socketId);
+      if (!remote) return;
+
+      if (toX < 0 || toX >= cols || toY < 0 || toY >= rows) return;
+      if (!walkable[toY][toX]) return;
+
+      easystar.findPath(remote.tileX, remote.tileY, toX, toY, (foundPath) => {
+        if (!foundPath) return;
+        remote.path = foundPath;
+        remote.stepIndex = 0;
+      });
+      easystar.calculate();
+    });
+
+    // ✅ Arranca /me después de crear myNameText
+    loadMe();
+  </script>
+</body>
+</html>

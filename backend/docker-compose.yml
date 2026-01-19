@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:16
+    container_name: pixelhotel-postgres
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pixelhotel_pgdata:/var/lib/postgresql/data
+
+volumes:
+  pixelhotel_pgdata:

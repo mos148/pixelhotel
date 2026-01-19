@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PixelHotel — Bienvenido</title>
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="pixelhotel">
+  <!-- ====== Topbar de login ====== -->
+  <header class="topbar">
+    <div class="container">
+      <img src="logo.png" alt="PixelHotel" class="hero-logo" />
+
+      <form class="mini-login" id="loginForm" aria-label="Acceso rápido">
+        <label>
+          <span class="sr-only">Email</span>
+          <input id="loginEmail" type="email" placeholder="Email" autocomplete="email" required />
+        </label>
+        <label>
+          <span class="sr-only">Contraseña</span>
+          <input id="loginPassword" type="password" placeholder="Contraseña" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn btn-dark">Login</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Zona para ver el resultado (temporal, para debug) -->
+  <pre id="loginResult" style="max-width: 900px; margin: 12px auto; white-space: pre-wrap;"></pre>
+
+  <!-- ======  ====== -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <h1 class="hero-title">¡No imaginas lo que pasa en este Hotel!</h1>
+      <div class="hero-grid">
+    <div class="register-box">
+  <div class="register-title">Si eres nuevo, crea una cuenta:</div>
+  <a class="register-btn" href="./register.html">Regístrate</a>
+    </div>
+
+
+        <figure class="room">
+          <div class="room-canvas">
+            <a href="assets/room.png"><img src="assets/room.png" style="width: 500px; margin-left: 40px; " alt="Vista previa de una sala de PixelHotel" /></a>
+            <div class="room-shadow"></div>
+            <div class="room-tile"></div>
+            <div class="room-people"></div>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Footer links ====== -->
+<footer class="ph-footer">
+  <div class="ph-container ph-footer__grid">
+    <!-- Col 1 -->
+    <div class="ph-footer__brand">
+      <div class="ph-footer__title">PixelHotel</div>
+      <p class="ph-footer__desc">
+        Hotel social isométrico en tiempo real. Proyecto (prototipo) centrado en
+        autenticación, multijugador y chat.
+      </p>
+    </div>
+
+    <!-- Col 2 -->
+    <nav class="ph-footer__links" aria-label="Enlaces">
+      <a href="#" aria-disabled="true">Soporte</a>
+      <a href="#" aria-disabled="true">Guía / FAQ</a>
+      <a href="#" aria-disabled="true">Términos de uso</a>
+      <a href="#" aria-disabled="true">Privacidad</a>
+      <a href="#" aria-disabled="true">Contacto</a>
+    </nav>
+
+    <!-- Col 3 -->
+    <div class="ph-footer__meta">
+      <div class="ph-footer__badge">Prototipo</div>
+      <div class="ph-footer__row"><span>Versión:</span> <strong>0.1</strong></div>
+      <div class="ph-footer__row"><span>Stack:</span> <strong>TS · Express · Postgres · Socket.IO · PixiJS</strong></div>
+    </div>
+  </div>
+
+  <div class="ph-footer__bottom" style="margin-left: 20px;">
+    <div class="ph-container ph-footer__bottomInner">
+      <div>© <span id="year"></span> PixelHotel — Miguel Ojeda Sánchez</div>
+      <div class="ph-footer__small">
+        Este sitio es un prototipo. No recopila datos personales ni utiliza
+        cookies para rastrear a los usuarios.
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const resultEl = document.getElementById("loginResult");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        email: document.getElementById("loginEmail").value,
+        password: document.getElementById("loginPassword").value
+      };
+
+      resultEl.textContent = "Enviando login...";
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          credentials: "include" // importante: guarda la cookie auth
+        });
+
+        const json = await res.json();
+        resultEl.textContent = JSON.stringify(json, null, 2);
+
+        if (json.ok) {
+          window.location.href = "/home.html";
+          
+        }
+      } catch (err) {
+        resultEl.textContent = "Error conectando con el servidor";
+      }
+    });
+
+    const onlineHud = document.getElementById("onlineHud");
+
+    socket.on("online:update", ({ count }) => {
+    onlineHud.textContent = `${count} personas online`;
+    });
+  </script>
+</body>
+</html>

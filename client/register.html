@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro – PixelHotel</title>
+  <link rel="icon" href="assets/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/auth.css" />
+
+</head>
+
+<body class="pixelhotel">
+
+  <!-- Header simple (reutilizable del index) -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="./index.html" class="brand" aria-label="Volver al inicio">
+        <img src="logo.png" alt="PixelHotel" class="hero-logo" />
+      </a>
+
+      <a class="topbar-link" href="./index.html">← Volver</a>
+    </div>
+  </header>
+
+  <!-- Fondo azul tipo portal -->
+  <main class="portal-bg">
+    <section class="auth-card" aria-label="Formulario de registro">
+      <h1 class="auth-title">Registro</h1>
+      <p class="auth-subtitle">Crea tu cuenta para entrar al hotel.</p>
+
+              <label class="field">
+          <span class="field-label">Nombre de usuario</span>
+          <input class="field-input" type="text" id="nickname" maxlength="12" placeholder="Nombre de usuario" required />
+          <span class="field-hint">Máx. 12 caracteres</span>
+        </label>
+
+      <form id="registerForm" class="auth-form">
+        <label class="field">
+          <span class="field-label">Email</span>
+          <input class="field-input" type="email" id="email" placeholder="tucorreo@email.com" autocomplete="email" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Password</span>
+          <input class="field-input" type="password" id="password" placeholder="••••••••" autocomplete="new-password" required />
+        </label>
+
+
+        <label class="field">
+          <span class="field-label">Fecha de nacimiento</span>
+          <input class="field-input" type="date" id="birth_date" required />
+        </label>
+
+        <button class="btn btn-green btn-full" type="submit">Registrarse</button>
+
+        <p class="auth-foot">
+          ¿Ya tienes cuenta?
+          <a href="./index.html">Inicia sesión</a>
+        </p>
+      </form>
+
+      <pre id="result" class="auth-result" aria-live="polite"></pre>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-mini">
+      <span>© PixelHotel — Miguel Ojeda Sánchez</span>
+      <span class="dot">•</span>
+      <span>Prototipo TFG</span>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById("registerForm");
+    const result = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        nickname: document.getElementById("nickname").value,
+        birth_date: document.getElementById("birth_date").value
+      };
+
+      result.textContent = "";
+
+      try {
+        const res = await fetch("/register", {   // 👈 mejor relativo, así sirve en prod también
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(data)
+        });
+
+        const json = await res.json();
+        result.textContent = JSON.stringify(json, null, 2);
+
+        // Si todo OK, te llevo al index para loguearte (o a /home si ya lo haces así)
+        if (json.ok) {
+          setTimeout(() => window.location.href = "/index.html", 700);
+        }
+      } catch (err) {
+        result.textContent = "Error conectando con el servidor";
+      }
+    });
+  </script>
+</body>
+</html>
