@@ -1,4 +1,4 @@
-/* HOME layout (inspirado Habbo 2012 pero con tu estilo oscuro) */
+/* HOME layout */
 
 .home {
   min-height: calc(100vh - 120px);
@@ -140,7 +140,7 @@
   padding: 6px 10px;
 }
 
-/* Enter block (botón grande tipo Habbo) */
+/* Enter block  */
 .enter-block {
   margin: 14px 0 18px;
   padding: 14px;

@@ -95,6 +95,13 @@
     const otherPlayers = new Map(); // socketId -> { container, tileX, tileY, path, stepIndex }
     let mySocketId = null;
 
+    // Manejar kick por login en otro sitio
+    socket.on("session:kicked", () => {
+     alert("Has iniciado sesión en otra pestaña/dispositivo. Se cerró esta sesión.");
+      window.location.href = "/index.html";
+      });
+
+
     const chatInput = document.getElementById("chatInput");
     const chatFeed  = document.getElementById("chatFeed");
     const onlineHud = document.getElementById("onlineHud");
@@ -225,7 +232,7 @@
     shadow.y = 0;
     avatarContainer.addChild(shadow);
 
-    // ✅ Texturas 4 direcciones (claves n/e/s/w)
+    //  Texturas 4 direcciones (claves n/e/s/w)
     const avatarTextures = {
       n: PIXI.Texture.from("/assets/avatar_n.png"),
       e: PIXI.Texture.from("/assets/avatar_e.png"),
@@ -233,13 +240,33 @@
       w: PIXI.Texture.from("/assets/avatar_w.png"),
     };
 
-    // ✅ sprite inicial correcto
+    //  sprite inicial correcto
     const avatar = new PIXI.Sprite(avatarTextures.s);
     avatarContainer.addChild(avatar);
 
     avatar.width = 95;
     avatar.height = 95;
     avatar.anchor.set(0.5, 0.9);
+
+  function createTypingBubble() {
+      const bubble = PIXI.Sprite.from("/assets/bubble.png"); 
+      
+      bubble.anchor.set(0.5, 1);
+      
+      // Forzamos el tamaño del bocadillo (ajusta estos números)
+      bubble.width = 60;  // Ancho en píxeles
+      bubble.height = 60; // Alto en píxeles
+      
+      bubble.x = 30;
+      bubble.y = -45;
+      
+      bubble.visible = false; // Déjalo en true un momento para cuadrarlo
+      
+      return bubble;
+    }
+
+    const myTypingBubble = createTypingBubble();
+    avatarContainer.addChild(myTypingBubble);
 
     // Dirección actual
     let currentDir = "s";
@@ -270,18 +297,7 @@
     }
     placeAvatarOnTile(0, 0);
 
-    // ====== FURNITURE ======
-    function createFurnitureOnTile(tx, ty) {
-      const f = new PIXI.Graphics();
-      f.beginFill(0x3399ff);
-      f.drawRect(-18, -40, 36, 40);
-      f.endFill();
-      const p = tileToScreen(tx, ty);
-      f.x = p.x;
-      f.y = p.y;
-      return f;
-    }
-    entityLayer.addChild(createFurnitureOnTile(3, 3));
+
 
     // ====== PATH LOCAL ======
     let path = [];
@@ -296,7 +312,7 @@
     app.stage.hitArea = app.screen;
 
     app.stage.on("pointerdown", (e) => {
-      isDragging = true;
+      isDragging = false;
       dragStart = { x: e.data.global.x, y: e.data.global.y };
       worldStart = { x: world.x, y: world.y };
     });
@@ -372,7 +388,7 @@
 
       const step = path[stepIndex];
 
-      // ✅ girar según el siguiente tile
+      // girar según el siguiente tile
       const dir = dirFromTo(avatarTileX, avatarTileY, step.x, step.y);
       setAvatarDir(dir);
 
@@ -416,6 +432,25 @@
       }, MESSAGE_LIFETIME);
     }
 
+    // Detectar escritura y enviar eventos de "typing" al servidor
+    let typingTimeout;
+
+    chatInput.addEventListener("input", () => {
+      if (!myTypingBubble.visible) {
+        myTypingBubble.visible = true;
+        socket.emit("chat:typing", true); // Avisamos al server
+      }
+
+      clearTimeout(typingTimeout);
+      
+      // Si dejas de escribir 2 segundos, se quita
+      typingTimeout = setTimeout(() => {
+        myTypingBubble.visible = false;
+        socket.emit("chat:typing", false);
+      }, 2000);
+    });
+
+
     chatInput.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       const text = chatInput.value.trim();
@@ -423,7 +458,20 @@
 
       socket.emit("chat:send", { text, nickname: myNickname });
       chatInput.value = "";
+      
+      
+      clearTimeout(typingTimeout);
+      myTypingBubble.visible = false;
+      socket.emit("chat:typing", false);
     });
+
+    // Escuchar cuando otros escriben para mostrarles su PNG
+    socket.on("player:typing", ({ socketId, isTyping }) => {
+      const remote = otherPlayers.get(socketId);
+      if (remote && remote.typingBubble) {
+        remote.typingBubble.visible = isTyping;
+      }
+      });
 
     socket.on("chat:msg", (msg) => {
       pushChatMessage(msg.text, msg.nickname);
@@ -466,13 +514,19 @@
 
       entityLayer.addChild(c);
 
+      const remoteTypingBubble = createTypingBubble();
+      c.addChild(remoteTypingBubble);
+
+      
       otherPlayers.set(p.socketId, {
         container: c,
         tileX: p.x,
         tileY: p.y,
         path: [],
-        stepIndex: 0
+        stepIndex: 0,
+        typingBubble: remoteTypingBubble 
       });
+
     }
 
     function removeRemotePlayer(socketId) {
@@ -519,7 +573,7 @@
       easystar.calculate();
     });
 
-    // ✅ Arranca /me después de crear myNameText
+    // Arranca /me después de crear myNameText
     loadMe();
   </script>
 </body>

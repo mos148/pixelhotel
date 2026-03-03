@@ -53,6 +53,8 @@
     </div>
   </section>
 
+
+
   <!-- ====== Footer links ====== -->
 <footer class="ph-footer">
   <div class="ph-container ph-footer__grid">
@@ -95,6 +97,7 @@
 
 
   <script>
+    
     const form = document.getElementById("loginForm");
     const resultEl = document.getElementById("loginResult");
 
@@ -117,11 +120,11 @@
         });
 
         const json = await res.json();
-        resultEl.textContent = JSON.stringify(json, null, 2);
-
         if (json.ok) {
+          resultEl.textContent = "";
           window.location.href = "/home.html";
-          
+        } else {
+          resultEl.textContent = "Email o contraseña incorrectos.";
         }
       } catch (err) {
         resultEl.textContent = "Error conectando con el servidor";

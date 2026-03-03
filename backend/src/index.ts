@@ -17,6 +17,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const players = new Map<string, PlayerState>();
+// 1 usuario (userId) -> 1 socket activo
+const userSocket = new Map<number, string>();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -24,13 +26,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "../../client")));
 
+// Servir index.html en la raíz
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "../../client/index.html"));
 });
 
 
 
-// Auth (vacías por ahora)
+// Login 
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body ?? {};
@@ -140,16 +143,18 @@ app.post("/register", async (req, res) => {
   }
 });
 
-
+// Logout: borrar cookie
 app.post("/logout", (_req, res) => {
   res.clearCookie("auth");
   return res.json({ ok: true });
 });
 
+// Ruta protegida de ejemplo
 app.get("/protected", requireAuth, (req, res) => {
   res.json({ ok: true, message: "Acceso permitido", userId: (req as any).userId });
 });
 
+// Obtener datos del usuario logueado
 app.get("/me", requireAuth, async (req, res) => {
   try {
     const userId = (req as any).userId;
@@ -196,6 +201,27 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+// Autenticación de socket.io usando cookie "auth" con JWT (evitamos duplicados)
+io.use((socket, next) => {
+  try {
+    const cookieHeader = socket.handshake.headers.cookie || "";
+    const cookies = cookie.parse(cookieHeader);
+
+    const token = cookies.auth;
+    if (!token) return next(new Error("No auth cookie"));
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return next(new Error("JWT_SECRET missing"));
+
+    const payload = jwt.verify(token, secret) as { userId: number; sv?: number };
+    socket.data.userId = payload.userId;
+
+    return next();
+  } catch (e) {
+    return next(new Error("Unauthorized"));
+  }
+});
+
 
   function broadcastOnlineCount() {
   io.emit("online:update", { count: io.engine.clientsCount });
@@ -203,45 +229,97 @@ const io = new Server(server, {
 
 
 io.on("connection", (socket) => {
-  console.log("✅ user connected:", socket.id);
+    const userId = socket.data.userId as number | undefined;
+
+  // Si no hay userId, fuera (por seguridad)
+  if (!userId) {
+    socket.disconnect(true);
+    return;
+  }
+
+  // Si este usuario ya tenía un socket activo, lo expulsamos
+  const prevSocketId = userSocket.get(userId);
+  if (prevSocketId && prevSocketId !== socket.id) {
+    const prev = io.sockets.sockets.get(prevSocketId);
+    if (prev) {
+      prev.emit("session:kicked");   // aviso al cliente viejo
+      prev.disconnect(true);         // lo echamos
+    }
+  }
+
+  // Guardamos este socket como el activo del userId
+  userSocket.set(userId, socket.id);
+
+  console.log("user connected:", socket.id);
   broadcastOnlineCount();
 
-  socket.on("chat:send", (payload) => {
-    // payload: { text, nickname }
-    io.emit("chat:msg", {
+socket.on("chat:send", (payload) => {
+    // Buscamos al jugador primero
+    const p = players.get(socket.id);
+    if (!p) return;
+
+    io.to(`room:${p.roomId}`).emit("chat:msg", {
       text: payload?.text ?? "",
       nickname: payload?.nickname ?? "???",
       at: Date.now(),
     });
   });
 
+  // Indicador de escritura (typing)
+  socket.on("chat:typing", (isTyping) => {
+    // 1. Buscamos al jugador
+    const p = players.get(socket.id);
+    if (!p) return;
+
+    // 2. Enviamos solo a su sala (usando socket.to en lugar de socket.broadcast)
+    socket.to(`room:${p.roomId}`).emit("player:typing", {
+      socketId: socket.id,
+      isTyping: !!isTyping,
+    });
+  });
+
+// Desconexión
   socket.on("disconnect", () => {
     const existed = players.get(socket.id);
     players.delete(socket.id);
 
     if (existed) {
-    socket.broadcast.emit("player:left", { socketId: socket.id });
+      // Avisamos solo a la sala en la que estaba
+      socket.to(`room:${existed.roomId}`).emit("player:left", { socketId: socket.id });
     }
-     console.log("❌ user disconnected:", socket.id);
-     broadcastOnlineCount();
+
+    const userId = socket.data.userId as number | undefined;
+    if (userId) {
+      const current = userSocket.get(userId);
+      if (current === socket.id) userSocket.delete(userId);
+    }
+
+    console.log("❌ user disconnected:", socket.id);
+    broadcastOnlineCount();
   });
 
 
+
 socket.on("player:hello", async () => {
-  const auth = getUserFromSocket(socket);
-  if (!auth) {
-    socket.disconnect();
+ const userId = socket.data.userId as number | undefined;
+  if (!userId) {
+    socket.disconnect(true);  // seguridad 
     return;
   }
-
- // Obtener nickname desde la BD
-
+  // Obtener nickname desde la BD
   const result = await pool.query(
     "SELECT nickname FROM users WHERE id = $1",
-    [auth.userId]
+    [userId]
   );
 
   const nickname = result.rows[0]?.nickname ?? "Player";
+
+  // Por defecto, todos entran a la sala 1 (Lobby)
+    const roomId = 1; 
+    const roomStr = `room:${roomId}`;
+    
+    // Unimos el socket a la sala de Socket.io
+    socket.join(roomStr);
 
   const spawnX = 0;
   const spawnY = 0;
@@ -251,19 +329,25 @@ socket.on("player:hello", async () => {
     nickname,
     x: spawnX,
     y: spawnY,
-  };
+    roomId: roomId // Asignamos el ID de la sala por defecto (Lobby)
+    };
 
   players.set(socket.id, me);
 
+  // Filtramos para enviarle SOLO los jugadores que estén en su misma sala
+    const playersInRoom = Array.from(players.values()).filter(p => p.roomId === roomId);
+
+// Enviamos al jugador que se unió su estado inicial y el de los demás
   socket.emit("players:init", {
     me: { socketId: socket.id },
-    players: Array.from(players.values()),
+    players: playersInRoom, 
   });
 
-  socket.broadcast.emit("player:joined", me);
+// Avisamos SOLO a los de esta sala de que hemos entrado
+    socket.to(roomStr).emit("player:joined", me);
 });
 
-
+// Movimiento de jugador
 socket.on("player:move", (payload) => {
   const p = players.get(socket.id);
   if (!p) return;
@@ -276,12 +360,15 @@ socket.on("player:move", (payload) => {
 
 
   // Guardamos el destino como "posición" (estado simple).
-  // Más adelante guardaremos posición real o haremos server autoritativo.
   p.x = toX;
   p.y = toY;
 
-  
-  io.emit("player:moved", { socketId: socket.id, toX, toY });
+  // io.to() envía a todos los de la sala (incluido el que se mueve)
+    io.to(`room:${p.roomId}`).emit("player:moved", { 
+      socketId: socket.id, 
+      toX: p.x, 
+      toY: p.y 
+    });
 });
 
 
@@ -292,7 +379,7 @@ socket.on("player:move", (payload) => {
 
 
 
-
+// Iniciar servidor
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -3,4 +3,5 @@ export interface PlayerState {
   nickname: string;
   x: number; // tileX
   y: number; // tileY
+  roomId: number;
 }

@@ -35,7 +35,7 @@ export function requireAuth(
     // 4) Guardar userId para la ruta
     req.userId = payload.userId;
 
-    // 5) Todo OK → seguir
+    // 5) Todo OK -> seguir
     next();
   } catch {
     return res.status(401).json({ ok: false, error: "Token inválido o expirado" });
