@@ -33,7 +33,7 @@ export class FriendsListComponent {
   cargarAmigos() {
     this.friendsService.getMisAmigos().subscribe({
       next: (data) => {
-        this.amigos = data;
+        this.amigos = data.amigos;
       },
       error: (err) => console.error('Error:', err),
     });
@@ -41,7 +41,7 @@ export class FriendsListComponent {
 
   cargarSolicitudes() {
     this.friendsService.getMisSolicitudes().subscribe((data) => {
-      this.solicitudes = data;
+      this.solicitudes = data.requests;
     });
   }
 

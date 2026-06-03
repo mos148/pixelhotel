@@ -168,8 +168,9 @@ app.post("/logout", (_req, res) => {
 });
 
 // Ruta para enviar solicitud de amistad o aceptarla
-app.post("/friends/request", async (req, res) => {
-  const { userId, friendId } = req.body;
+app.post("/friends/request", requireAuth, async (req, res) => {
+  const userId = Number((req as any).userId);
+  const { friendId } = req.body;
 
   try {
     // Primero comprobamos si ya existe una relación previa
@@ -219,10 +220,10 @@ app.get("/friends", requireAuth, async (req, res) => {
       online: userSocket.has(u.id),
     }));
 
-    res.json(amigos);
+    res.json({ ok: true, amigos });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error" });
+    res.status(500).json({ ok: false, error: "Error" });
   }
 });
 
@@ -240,10 +241,10 @@ app.get("/friends/requests", requireAuth, async (req, res) => {
       [userId],
     );
 
-    res.json(result.rows);
+    res.json({ ok: true, requests: result.rows });
   } catch (err) {
     console.error("ERROR EN SOLICITUDES:", err);
-    res.status(500).json({ error: "No se pudieron cargar solicitudes" });
+    res.status(500).json({ ok: false, error: "No se pudieron cargar solicitudes" });
   }
 });
 

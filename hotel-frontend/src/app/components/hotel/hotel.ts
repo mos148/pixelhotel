@@ -1702,10 +1702,10 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
 
   cargarEstadoSocial() {
     // Cargamos amigos
-    this.friendsService.getMisAmigos().subscribe((data) => (this.misAmigos = data));
+    this.friendsService.getMisAmigos().subscribe((data) => (this.misAmigos = data.amigos));
 
     // Cargamos solicitudes pendientes
-    this.friendsService.getMisSolicitudes().subscribe((data) => (this.misSolicitudes = data));
+    this.friendsService.getMisSolicitudes().subscribe((data) => (this.misSolicitudes = data.requests));
   }
 
   // Funciones para comprobar estado de amistad (usadas en el HTML para mostrar botones condicionales)

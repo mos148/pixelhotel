@@ -10,17 +10,17 @@ export class FriendsService {
   constructor(private http: HttpClient) {}
 
   getMisAmigos() {
-    return this.http.get<any[]>('/friends', { withCredentials: true });
+    return this.http.get<{ ok: boolean; amigos: any[] }>('/friends', { withCredentials: true });
   }
 
   getMisSolicitudes() {
-    return this.http.get<any[]>('/friends/requests', {
+    return this.http.get<{ ok: boolean; requests: any[] }>('/friends/requests', {
       withCredentials: true,
     });
   }
 
   enviarSolicitud(userId: number, friendId: number) {
-    return this.http.post(`${this.apiUrl}/request`, { userId, friendId });
+    return this.http.post(`${this.apiUrl}/request`, { friendId }, { withCredentials: true });
   }
 
   responderSolicitud(friendshipId: number, action: string) {
