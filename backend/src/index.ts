@@ -168,7 +168,7 @@ app.post("/logout", (_req, res) => {
 });
 
 // Ruta para enviar solicitud de amistad o aceptarla
-app.post("/api/friends/request", async (req, res) => {
+app.post("/friends/request", async (req, res) => {
   const { userId, friendId } = req.body;
 
   try {
@@ -199,7 +199,7 @@ app.post("/api/friends/request", async (req, res) => {
 });
 
 // Obtener lista de amigos (relaciones aceptadas)
-app.get("/api/friends", requireAuth, async (req, res) => {
+app.get("/friends", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   try {
     const query = `
@@ -227,7 +227,7 @@ app.get("/api/friends", requireAuth, async (req, res) => {
 });
 
 //  Ver solicitudes pendientes que tengo
-app.get("/api/friends/requests", requireAuth, async (req, res) => {
+app.get("/friends/requests", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   try {
     // Buscamos solo donde tú eres el RECEPTOR (friend_id) y está pendiente
@@ -248,7 +248,7 @@ app.get("/api/friends/requests", requireAuth, async (req, res) => {
 });
 
 // Aceptar o Denegar solicitud de amistad
-app.post("/api/friends/action", requireAuth, async (req, res) => {
+app.post("/friends/action", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   const { friendshipId, action } = req.body;
 
@@ -270,7 +270,7 @@ app.post("/api/friends/action", requireAuth, async (req, res) => {
 });
 
 // --- ELIMINAR AMIGO ---
-app.post("/api/friends/remove", requireAuth, async (req, res) => {
+app.post("/friends/remove", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   const { friendId } = req.body;
 
@@ -290,7 +290,7 @@ app.post("/api/friends/remove", requireAuth, async (req, res) => {
 });
 
 // Ruta reutilizable para consultar el estado de relación con cualquier usuario
-app.get("/api/users/status/:id", requireAuth, async (req, res) => {
+app.get("/users/status/:id", requireAuth, async (req, res) => {
   const myId = Number((req as any).userId);
   const targetId = Number(req.params.id);
 
@@ -351,7 +351,7 @@ app.get("/me", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/users/:id/avatar", async (req, res) => {
+app.get("/users/:id/avatar", async (req, res) => {
   try {
     const userId = req.params.id;
 
