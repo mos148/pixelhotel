@@ -1,0 +1,206 @@
+<div class="hotel-wrapper">
+  <div *ngIf="isLoading" class="loading-screen">
+    <div class="spinner">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <p style="margin-top: 20px">Cargando Hotel...</p>
+  </div>
+
+  <div [style.display]="isLoading ? 'none' : 'block'" #pixiContainer class="pixi-container"></div>
+
+  <button (click)="toggleNavigator()" class="btn-navegador">🌍 Navegador</button>
+  <button class="btn-inventario" (click)="isInventoryOpen = true">📦 Inventario</button>
+
+  <div *ngIf="isNavigatorOpen" class="ventana-navegador">
+    <div class="nav-header">
+      <span>Navegador de Salas</span>
+      <button (click)="toggleNavigator()" class="btn-cerrar">X</button>
+    </div>
+
+    <div class="nav-tabs">
+      <button
+        class="nav-tab"
+        [class.active]="activeTab === 'publicas'"
+        (click)="changeTab('publicas')"
+      >
+        Públicas
+      </button>
+      <button class="nav-tab" [class.active]="activeTab === 'todas'" (click)="changeTab('todas')">
+        Todas
+      </button>
+      <button
+        class="nav-tab"
+        [class.active]="activeTab === 'mis_salas'"
+        (click)="changeTab('mis_salas')"
+      >
+        Mis Salas
+      </button>
+    </div>
+
+    <div class="nav-content">
+      @for (sala of salasAMostrar; track sala.id) {
+        <div class="sala-item">
+          <div class="sala-info">
+            <div class="sala-name">{{ sala.name }}</div>
+            <div class="sala-details">
+              Dueño: {{ sala.owner_name }} | Jugadores: {{ sala.current_users }}/{{
+                sala.max_users
+              }}
+            </div>
+          </div>
+
+          @if (activeTab === 'mis_salas') {
+            <button class="btn-borrar" (click)="borrarSala(sala.id)">X</button>
+          }
+
+          <button class="btn-entrar" (click)="entrarSala(sala.id)">Entrar</button>
+        </div>
+      } @empty {
+        <p style="color: black">No hay salas en esta categoría.</p>
+      }
+    </div>
+
+    <div class="nav-footer">
+      <button (click)="toggleCreateModal()" class="btn-crear-sala">✚ Crear Sala</button>
+    </div>
+  </div>
+
+  <div *ngIf="isCreateModalOpen" class="modal-crear-sala">
+    <div class="nav-header">
+      <span>Crear Nueva Sala</span>
+      <button (click)="toggleCreateModal()" class="btn-cerrar">X</button>
+    </div>
+    <div class="modal-body">
+      <label>Nombre de la sala:</label>
+      <input type="text" #inputRoomName placeholder="Ej: Mi Sala Chill" maxlength="30" />
+
+      <label>Tamaño de la sala:</label>
+      <select #selectRoomSize>
+        <option value="6">Mini (6x6)</option>
+        <option value="10" selected>Normal (10x10)</option>
+        <option value="15">Grande (15x15)</option>
+        <option value="20">Gigante (20x20)</option>
+      </select>
+
+      <label>Límite de visitantes:</label>
+      <input type="number" #inputMaxUsers value="15" min="2" max="50" />
+
+      <button
+        class="btn-confirmar-crear"
+        (click)="crearSala(inputRoomName.value, selectRoomSize.value, inputMaxUsers.value)"
+      >
+        Construir Sala
+      </button>
+    </div>
+  </div>
+
+  <div id="avatarMenu" *ngIf="isAvatarMenuOpen" class="avatar-menu">
+    <div class="menu-header">Acciones</div>
+    <button (click)="abrirRopa()">👕 Mi Ropa</button>
+    <button (click)="bailar()" >💃 Bailar</button>
+  </div>
+  <div id="targetMenu" *ngIf="isTargetMenuOpen" class="avatar-menu target-menu">
+    <div class="menu-header">{{ targetName }}</div>
+
+    @if (estadoAmistad === 'none') {
+      <button (click)="agregarAmigo()">➕ Añadir Amigo</button>
+    }
+    @if (estadoAmistad === 'amigo') {
+      <button (click)="abrirChatPrivado(targetName)">💬 Susurrar</button>
+    }
+
+    <button (click)="isTargetMenuOpen = false">❌ Cerrar</button>
+  </div>
+  @for (chat of chatsPrivados; track chat.targetId) {
+    <div class="private-chat-window" [style.right.px]="20 + chatsPrivados.indexOf(chat) * 300">
+      <div class="chat-header">
+        <span>💬 {{ chat.targetName }}</span>
+        <button (click)="cerrarChatPrivado(chat.targetId)">X</button>
+      </div>
+
+      <div class="chat-body">
+        @for (msg of chat.mensajes; track msg.id) {
+          <div class="msg-wrapper" [class.msg-mine]="msg.isMine" [class.msg-theirs]="!msg.isMine">
+            <div class="msg-bubble">
+              @if (!msg.isMine) {
+                <span class="msg-sender">{{ msg.sender }}</span>
+              }
+
+              <span class="msg-text">{{ msg.text }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <input
+        #privInput
+        (keyup.enter)="enviarPrivado(privInput.value, chat); privInput.value = ''"
+        placeholder="Escribe un susurro..."
+      />
+    </div>
+  }
+  <button class="btn-tienda" (click)="isShopOpen = true">🛒 Tienda ({{ misCreditos }}c)</button>
+
+
+  <div *ngIf="isFurniSelectedMenuOpen" class="furni-action-menu">
+    <div class="furni-action-header">
+      <span>{{ selectedFurni.name }}</span>
+      <button (click)="isFurniSelectedMenuOpen = false" class="btn-cerrar">X</button>
+    </div>
+    <div class="furni-action-body">
+      <button (click)="recogerFurni()">📦 Recoger</button>
+      <button (click)="moverFurni()">🚚 Mover</button>
+      <button (click)="girarFurni()">🔄 Girar</button>
+    </div>
+  </div>
+
+  <div id="chatFeed" class="chat-feed" aria-live="polite">
+    @for (msg of mensajesChat; track msg.id) {
+      <div class="chatMsg" [class.fadeOut]="msg.fadingOut">
+        <span class="name">{{ msg.nickname }}:</span>
+        <span class="text">{{ msg.text }}</span>
+      </div>
+    }
+  </div>
+
+  <div id="chatBar" class="chat-bar">
+    <input
+      #inputChat
+      id="chatInput"
+      type="text"
+      maxlength="60"
+      placeholder="Escribe aquí..."
+      autocomplete="off"
+      (keyup.enter)="enviarMensaje(inputChat.value); inputChat.value = ''"
+    />
+  </div>
+
+<div id="onlineHud">
+  Jugadores Online: {{ onlineCount !== undefined ? onlineCount : 0 }}
+</div>
+</div>
+<app-friends-list (onSusurrar)="abrirChatPrivado($event)" (onSeguir)="seguirJugador($event)">
+</app-friends-list>
+<app-avatar-editor
+  *ngIf="isClothingMenuOpen"
+  (colorCambiado)="aplicarColorPrenda($event.tipo, $event.color)"
+  (cerrarMenu)="isClothingMenuOpen = false"
+>
+</app-avatar-editor>
+<app-shop
+  *ngIf="isShopOpen"
+  [socket]="socket"
+  [misCreditos]="misCreditos"
+  (cerrarMenu)="isShopOpen = false"
+  (creditosActualizados)="actualizarCreditos($event)"
+>
+</app-shop>
+<app-inventory
+  *ngIf="isInventoryOpen"
+  [socket]="socket"
+  (colocarItem)="activarModoConstruccion($event)"
+  (cerrarMenu)="isInventoryOpen = false"
+>
+</app-inventory>

@@ -1,0 +1,67 @@
+<div class="habbo-modal-overlay">
+  <div class="habbo-modal">
+    <div class="modal-header">
+      <span>👔 Armario</span>
+      <button class="close-btn" (click)="cerrar()">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="left-col">
+        <div class="btn-group">
+          <button (click)="tipoSeleccionado = 'hair'">Pelo</button>
+          <button (click)="tipoSeleccionado = 'shirt'">Camisa</button>
+          <button (click)="tipoSeleccionado = 'pant'">Pantalones</button>
+          <button (click)="tipoSeleccionado = 'shoes'">Zapatos</button>
+
+        </div>
+        <div class="preview-section">
+          <div
+            class="preview-icon"
+            [style.-webkit-mask-image]="
+              'url(' +
+              (tipoSeleccionado === 'shirt'
+                ? '/assets/shirt_icon.png'
+                : tipoSeleccionado === 'pant'
+                  ? '/assets/jean_icon.png'
+                  : tipoSeleccionado === 'shoes'
+                    ? '/assets/shoe_icon.png'
+                    : '/assets/hair_icon.png') +
+              ')'
+            "
+            [style.mask-image]="
+              'url(' +
+              (tipoSeleccionado === 'shirt'
+                ? '/assets/shirt_icon.png'
+                : tipoSeleccionado === 'pant'
+                  ? '/assets/jean_icon.png'
+                  : tipoSeleccionado === 'shoes'
+                    ? '/assets/shoe_icon.png'
+                    : '/assets/hair_icon.png') +
+              ')'
+            "
+            [style.background-color]="
+              getHex(
+                tipoSeleccionado === 'shirt'
+                  ? colorCamisa
+                  : tipoSeleccionado === 'pant'
+                    ? colorPantalon
+                    : tipoSeleccionado === 'shoes'
+                      ? colorZapatos
+                      : colorPelo
+              )
+            "
+          ></div>
+        </div>
+      </div>
+
+      <div class="palette-section">
+        <button
+          *ngFor="let color of colores"
+          class="color-swatch"
+          [style.backgroundColor]="getHex(color)"
+          (click)="seleccionarColor(color)"
+        ></button>
+      </div>
+    </div>
+  </div>
+</div>

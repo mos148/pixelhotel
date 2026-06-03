@@ -1,0 +1,162 @@
+<main class="portal-bg">
+  <section class="auth-card" aria-label="Formulario de registro">
+    <h1 class="auth-title">Registro</h1>
+    <p class="auth-subtitle">Crea tu cuenta para entrar al hotel.</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="registrarse()" class="auth-form">
+      <label class="field">
+        <span class="field-label">Nombre de usuario</span>
+
+        <input
+          class="field-input"
+          [class.field-error]="
+            registerForm.get('nickname')?.invalid && registerForm.get('nickname')?.touched
+          "
+          formControlName="nickname"
+          type="text"
+          maxlength="12"
+          placeholder="Nombre de usuario"
+        />
+
+        <span class="field-hint">Máx. 12 caracteres</span>
+
+        @if (
+          registerForm.get('nickname')?.touched &&
+          registerForm.get('nickname')?.errors?.['required']
+        ) {
+          <span class="error-text"> El nombre de usuario es obligatorio </span>
+        }
+
+        @if (
+          registerForm.get('nickname')?.touched &&
+          registerForm.get('nickname')?.errors?.['maxlength']
+        ) {
+          <span class="error-text"> Máximo 12 caracteres </span>
+        }
+      </label>
+
+      <label class="field">
+        <span class="field-label">Email</span>
+
+        <input
+          class="field-input"
+          [class.field-error]="
+            registerForm.get('email')?.invalid && registerForm.get('email')?.touched
+          "
+          formControlName="email"
+          type="email"
+          placeholder="tucorreo@gmail.com"
+        />
+
+        @if (
+          registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']
+        ) {
+          <span class="error-text"> El email es obligatorio </span>
+        }
+
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']) {
+          <span class="error-text"> Introduce un email válido </span>
+        }
+      </label>
+
+      <label class="field">
+        <span class="field-label">Password</span>
+
+        <input
+          class="field-input"
+          [class.field-error]="
+            registerForm.get('password')?.invalid && registerForm.get('password')?.touched
+          "
+          formControlName="password"
+          type="password"
+          placeholder="••••••••"
+        />
+
+        @if (
+          registerForm.get('password')?.touched &&
+          registerForm.get('password')?.errors?.['required']
+        ) {
+          <span class="error-text"> La contraseña es obligatoria </span>
+        }
+
+        @if (
+          registerForm.get('password')?.touched &&
+          registerForm.get('password')?.errors?.['minlength']
+        ) {
+          <span class="error-text"> La contraseña debe tener al menos 6 caracteres </span>
+        }
+      </label>
+
+      <label class="field">
+        <span class="field-label">Fecha de nacimiento</span>
+
+        <input
+          class="field-input"
+          [class.field-error]="
+            registerForm.get('birth_date')?.invalid && registerForm.get('birth_date')?.touched
+          "
+          formControlName="birth_date"
+          type="date"
+        />
+
+        @if (
+          registerForm.get('birth_date')?.touched &&
+          registerForm.get('birth_date')?.errors?.['required']
+        ) {
+          <span class="error-text"> Debes indicar tu fecha de nacimiento </span>
+        }
+      </label>
+
+      <button class="btn btn-green btn-full" type="submit">Registrarse</button>
+
+      <p class="auth-foot">
+        ¿Ya tienes cuenta?
+        <a routerLink="/login">Inicia sesión</a>
+      </p>
+    </form>
+
+    @if (mensaje) {
+      <div class="alert-banner" [class.is-error]="isError" [class.is-success]="isSuccess">
+        {{ mensaje }}
+      </div>
+    }
+  </section>
+</main>
+
+<footer class="ph-footer">
+  <div class="container ph-footer__grid">
+    <div class="ph-footer__brand">
+      <div class="ph-footer__title">PixelHotel</div>
+      <p class="ph-footer__desc">
+        Hotel social isométrico en tiempo real. Proyecto (prototipo) centrado en autenticación,
+        multijugador y chat.
+      </p>
+    </div>
+
+    <nav class="ph-footer__links" aria-label="Enlaces">
+      <a href="#" aria-disabled="true">Soporte</a>
+      <a href="#" aria-disabled="true">Guía / FAQ</a>
+      <a href="#" aria-disabled="true">Términos</a>
+      <a href="#" aria-disabled="true">Privacidad</a>
+    </nav>
+
+    <div class="ph-footer__meta">
+      <div class="ph-footer__badge">Prototipo</div>
+      <div class="ph-footer__row">
+        <span>Versión:</span>
+        <strong>0.2</strong>
+      </div>
+      <div class="ph-footer__row">
+        <span>Stack:</span>
+        <strong>Angular · Express · Postgres</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="ph-footer__bottom">
+    <div class="container ph-footer__bottomInner">
+      <div>© 2026 PixelHotel</div>
+      <div class="ph-footer__small">Este sitio es un prototipo. No recopila datos personales.</div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,49 @@
+<div class="friends-container" [class.open]="isOpen">
+  <div class="friends-header" (click)="toggleList()">
+    <span>👥 Mis Amigos ({{ amigos.length }})</span>
+    <span class="icon">{{ isOpen ? '▼' : '▲' }}</span>
+  </div>
+
+  @if (isOpen) {
+    <div class="friends-body">
+      <div class="tabs">
+        <button [class.active]="tab === 'amigos'" (click)="tab = 'amigos'">Amigos</button>
+        <button [class.active]="tab === 'solicitudes'" (click)="tab = 'solicitudes'">
+          Solicitudes ({{ solicitudes.length }})
+        </button>
+      </div>
+
+      @if (tab === 'amigos') {
+        @for (amigo of amigos; track amigo.id) {
+          <div class="friend-item">
+            <span class="status-dot" [class.online]="amigo.online"></span>
+            <span class="friend-name">{{ amigo.nickname }}</span>
+            <div class="friend-actions">
+              <button (click)="iniciarChat(amigo)" title="Mensaje privado">💬</button>
+              @if (amigo.online) {
+                <button (click)="seguirAmigo(amigo)">🏃 </button>
+              }
+              <button (click)="eliminarAmigo(amigo)">🗑️</button>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-msg">No tienes amigos todavía.</p>
+        }
+      }
+
+      @if (tab === 'solicitudes') {
+        @for (req of solicitudes; track req.id) {
+          <div class="friend-item">
+            <span class="friend-name">{{ req.sender_name }}</span>
+            <div class="friend-actions">
+              <button (click)="responder(req.id, 'accepted')" title="Aceptar">✅</button>
+              <button (click)="responder(req.id, 'rejected')" title="Rechazar">❌</button>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-msg">No hay solicitudes pendientes.</p>
+        }
+      }
+    </div>
+  }
+</div>

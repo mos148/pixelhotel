@@ -1,0 +1,25 @@
+<div class="habbo-modal-overlay">
+  <div class="habbo-modal">
+    <div class="modal-header">
+      <span>📦 Mi Inventario</span>
+      <button class="close-btn" (click)="cerrar()">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <p *ngIf="miInventario.length === 0" class="empty-msg">Tu inventario está vacío.</p>
+
+      <div class="grid-container">
+        <div *ngFor="let item of miInventario" class="furni-card">
+          <img
+            class="furni-preview"
+            [src]="'/assets/furni/' + (item.sprite_name || 'caja') + '.png'"
+            alt="furni"
+          />
+          <p class="furni-name">{{ item.name }}</p>
+          <p class="furni-amount">x{{ item.amount }}</p>
+          <button class="place-btn" (click)="seleccionar(item)">Colocar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

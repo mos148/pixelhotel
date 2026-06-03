@@ -1,0 +1,36 @@
+<div class="habbo-modal-overlay">
+  <div class="habbo-modal">
+    <div class="modal-header">
+      <span>🛒 Catálogo de Muebles</span>
+      <button class="close-btn" (click)="cerrar()">✖</button>
+    </div>
+
+    <div class="shop-tabs">
+      <button
+        *ngFor="let cat of categorias"
+        [class.active]="categoriaSeleccionada === cat"
+        (click)="categoriaSeleccionada = cat"
+      >
+        {{ cat }}
+      </button>
+    </div>
+    @if (mensaje) {
+      <div class="alert-banner" [class.is-error]="isError" [class.is-success]="isSuccess">
+        {{ mensaje }}
+      </div>
+    }
+    <div class="modal-body">
+      <div class="grid-container">
+        <div *ngFor="let item of catalogoAgrupado[categoriaSeleccionada] || []" class="furni-card">
+          <img
+            class="furni-preview"
+            [src]="'/assets/furni/' + (item.sprite_name || 'caja') + '.png'"
+          />
+          <p class="furni-name">{{ item.name }}</p>
+          <p class="furni-price">{{ item.price }}c</p>
+          <button class="buy-btn" (click)="comprar(item)">Comprar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

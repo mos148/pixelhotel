@@ -1,0 +1,147 @@
+<div class="home-wrapper">
+  <header class="topbar topbar--home">
+    <div class="container topbar-inner">
+      <a routerLink="/home" class="brand" aria-label="Inicio PixelHotel">
+        <img src="assets/logo.png" alt="PixelHotel" class="hero-logo" />
+      </a>
+
+      <nav class="topnav" aria-label="Navegación">
+        <a class="topnav-link is-active" routerLink="/home" routerLinkActive="is-active">Home</a>
+        <a class="topnav-link" routerLink="/hotel" routerLinkActive="is-active">Hotel</a>
+        <button (click)="logout()" class="btn btn-dark btn-sm" type="button">Cerrar sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="home">
+    <div class="container home-grid">
+
+      
+      <section class="card panel profile" aria-label="Perfil">
+        <div class="profile-head">
+          <div class="avatar-frame" aria-hidden="true">
+            
+            <img [src]="meAvatarUrl" alt="Avatar de {{ meNick }}" />
+          </div>
+
+          <div class="profile-meta">
+            <div class="badges-container">
+              <div class="chip chip-green">🟢 Conectado</div>
+              <div class="chip chip-gold">🪙 {{ meCreditos }} Créditos</div>
+            </div>
+            <h1 class="profile-name">
+              <span id="meNick">{{ meNick }}</span>
+            </h1>
+            <p class="muted">Tu zona de inicio. ¡El hotel te espera!</p>
+          </div>
+        </div>
+
+       
+        <div class="enter-block">
+          <button (click)="enterHotel()" class="btn btn-green btn-xl pulse-btn" type="button">
+            Entrar al Hotel
+            <span class="chev">››</span>
+          </button>
+
+          <div class="enter-sub">
+            <span class="muted">Novedad:</span> ¡Ya puedes crear tus propias salas y decorarlas!
+          </div>
+        </div>
+
+        
+        <div class="quick">
+          <h2 class="panel-title">Tus Atajos</h2>
+          <div class="quick-grid">
+            <a class="quick-item" routerLink="/hotel">
+              <span class="q-ico">🌍</span>
+              <span class="q-txt">
+                <strong>Navegador de Salas</strong>
+                <small>Explora el hotel</small>
+              </span>
+            </a>
+
+            <a class="quick-item" routerLink="/hotel">
+              <span class="q-ico">👕</span>
+              <span class="q-txt">
+                <strong>Mi Armario</strong>
+                <small>Cambia tu estilo</small>
+              </span>
+            </a>
+
+            <a class="quick-item" routerLink="/hotel">
+              <span class="q-ico">📦</span>
+              <span class="q-txt">
+                <strong>Inventario</strong>
+                <small>Gestiona tus muebles</small>
+              </span>
+            </a>
+
+            <a class="quick-item" routerLink="/hotel">
+              <span class="q-ico">👥</span>
+              <span class="q-txt">
+                <strong>Mis Amigos</strong>
+                <small>Mira quién está online</small>
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      
+      <aside class="panel news-panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Novedades del Proyecto</h2>
+        </div>
+
+        <div class="news">
+          <div class="news-item">
+            <div class="news-title">🏗️ ¡El Modo Construcción ya está aquí!</div>
+            <div class="news-meta">Reciente</div>
+            <p class="news-text">Ya puedes acceder a la tienda, comprar muebles y decorar las salas que crees a tu gusto.</p>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">👕 Nuevo sistema de ropa</div>
+            <div class="news-meta">Actualización</div>
+            <p class="news-text">¡Abre tu armario dentro del hotel para poder cambiar el color de tu ropa!</p>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">💬 Sistema Social Activo</div>
+            <div class="news-meta">Destacado</div>
+            <p class="news-text">Ahora podrás añadir a otros jugadores y ver si están conectados, además de enviarles mensajes privados y seguirles.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+ <footer class="ph-footer">
+    <div class="container ph-footer__grid">
+      <div class="ph-footer__brand">
+        <div class="ph-footer__title">PixelHotel</div>
+        <p class="ph-footer__desc">
+          Hotel social isométrico en tiempo real. Proyecto (prototipo) centrado en autenticación, multijugador y chat.
+        </p>
+      </div>
+      <nav class="ph-footer__links" aria-label="Enlaces">
+        <a href="#" aria-disabled="true">Soporte</a>
+        <a href="#" aria-disabled="true">Guía / FAQ</a>
+        <a href="#" aria-disabled="true">Términos</a>
+        <a href="#" aria-disabled="true">Privacidad</a>
+      </nav>
+      <div class="ph-footer__meta">
+        <div class="ph-footer__badge">Prototipo</div>
+        <div class="ph-footer__row"><span>Versión:</span> <strong>0.2</strong></div>
+        <div class="ph-footer__row"><span>Stack:</span> <strong>Angular · Express · Postgres</strong></div>
+      </div>
+    </div>
+
+    <div class="ph-footer__bottom">
+      <div class="container ph-footer__bottomInner">
+        <div>© 2026 PixelHotel</div>
+        <div class="ph-footer__small">Este sitio es un prototipo. No recopila datos personales.</div>
+      </div>
+    </div>
+  </footer>
+</div>

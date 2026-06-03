@@ -1,0 +1,125 @@
+.habbo-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.habbo-modal {
+  background: #e9e9e9;
+  border: 2px solid #000;
+  border-radius: 6px;
+  /* max-content hace que el modal crezca lo necesario para que quepan los botones y la paleta de 4 columnas */
+  width: max-content; 
+  min-width: 320px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: #1a659e;
+  color: white;
+  padding: 8px 12px;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #000;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-btn:hover {
+  color: #ff5555;
+}
+
+.modal-body {
+  display: flex;
+  padding: 15px;
+  gap: 20px;
+}
+
+.left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Opcional: Alinear bien los 3 botones */
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.btn-group button {
+  padding: 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.preview-section {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #999;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: auto; /* Empuja el preview hacia abajo si los botones ocupan espacio */
+}
+
+.preview-icon {
+  width: 50px;
+  height: 50px;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.palette-section {
+  display: grid;
+  /* AQUÍ ESTÁ LA MAGIA: 4 columnas exactas de 30px */
+  grid-template-columns: repeat(4, 30px);
+  gap: 5px;
+  align-content: start; /* Evita que los colores se estiren hacia abajo */
+}
+
+.color-swatch {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #000;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s;
+}
+
+.color-swatch:hover {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.color-swatch.selected {
+  border: 2px solid #000;
+  transform: scale(1.1);
+  box-shadow: inset 0 0 0 1px #fff;
+}

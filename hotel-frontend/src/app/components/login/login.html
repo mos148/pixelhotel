@@ -1,0 +1,85 @@
+<div class="login-page-wrapper">
+  <header class="topbar">
+    <div class="container">
+      <img src="assets/logo.png" alt="PixelHotel" class="hero-logo" />
+
+      <div class="mini-login" aria-label="Acceso rápido">
+        <label>
+          <span class="sr-only">Email</span>
+          <input #loginEmail type="email" placeholder="Email" autocomplete="email" required />
+        </label>
+        <label>
+          <span class="sr-only">Contraseña</span>
+          <input
+            #loginPassword
+            type="password"
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <button (click)="iniciarSesion(loginEmail.value, loginPassword.value)" class="btn btn-dark">
+          Login
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (mensajeError) {
+    <div class="alert-banner" [class.is-error]="isError" [class.is-success]="isSuccess">
+      {{ mensajeError }}
+    </div>
+  }
+
+  <section class="hero">
+    <div class="container hero-inner">
+      <h1 class="hero-title">¡No imaginas lo que pasa en este Hotel!</h1>
+      <div class="hero-grid">
+        <div class="register-box">
+          <div class="register-title">Si eres nuevo, crea una cuenta:</div>
+          <button class="register-btn" routerLink="/register" type="button">Regístrate</button>
+        </div>
+
+        <figure class="room">
+          <div class="room-canvas">
+            <img src="assets/room.png" style="width: 500px; margin-left: 40px" alt="Vista previa" />
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ph-footer">
+    <div class="container ph-footer__grid">
+      <div class="ph-footer__brand">
+        <div class="ph-footer__title">PixelHotel</div>
+        <p class="ph-footer__desc">
+          Hotel social isométrico en tiempo real. ¡Entra, explora, chatea y crea tus propias salas!
+          Proyecto (prototipo).
+        </p>
+      </div>
+      <nav class="ph-footer__links" aria-label="Enlaces">
+        <a href="#" aria-disabled="true">Soporte</a>
+        <a href="#" aria-disabled="true">Guía / FAQ</a>
+        <a href="#" aria-disabled="true">Términos</a>
+        <a href="#" aria-disabled="true">Privacidad</a>
+      </nav>
+      <div class="ph-footer__meta">
+        <div class="ph-footer__badge">Prototipo</div>
+        <div class="ph-footer__row"><span>Versión:</span> <strong>0.2</strong></div>
+        <div class="ph-footer__row">
+          <span>Stack:</span> <strong>Angular · Express · Postgres</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="ph-footer__bottom">
+      <div class="container ph-footer__bottomInner">
+        <div>© 2026 PixelHotel</div>
+        <div class="ph-footer__small">
+          Este sitio es un prototipo. No recopila datos personales.
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

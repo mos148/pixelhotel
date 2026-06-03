@@ -1,0 +1,83 @@
+.friends-container {
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  width: 250px;
+  background: white;
+  border: 2px solid #222;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  font-family: Arial, sans-serif;
+  z-index: 50;
+}
+
+.friends-header {
+  background: #4CAF50;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 8px 8px 0 0;
+}
+
+.friends-body {
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: gray;
+  margin-right: 8px;
+}
+
+.status-dot.online {
+  background: #4CAF50;
+}
+
+.friend-name {
+  flex-grow: 1;
+  color: #000000;
+}
+
+.friend-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.tabs button {
+  flex: 1;
+  padding: 5px;
+  cursor: pointer;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+}
+.tabs button.active {
+  background: #4CAF50;
+  color: white;
+}
+.empty-msg {
+  text-align: center;
+  color: #888;
+  font-size: 0.9em;
+  padding: 10px;
+}
