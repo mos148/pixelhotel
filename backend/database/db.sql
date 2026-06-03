@@ -151,7 +151,7 @@ VALUES
 ('Mesa Cuadrada', '0xFFFFFF', 120, 2, 'cocina/mesa_cuadrada', false),
 ('Mesa Redonda', '0xFFFFFF', 100, 2, 'cocina/mesa_redonda', false),
 ('Armario de Cocina', '0xFFFFFF', 180, 2, 'cocina/armario', false),
-('Cajonera de Cocina', '0xFFFFFF', 80, 2, 'cocina/cajon', false);
+('Cajonera de Cocina', '0xFFFFFF', 80, 2, 'cocina/cajon', false),
 ('Cafetera', '0xFFFFFF', 60, 2, 'cocina/cafetera', false);
 
 

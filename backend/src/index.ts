@@ -24,7 +24,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:4200",
+    origin: ["http://localhost:4200", "http://79.143.94.107:4200", "http://pixelhotel.online", "http://www.pixelhotel.online", "http://www.pixelhotel.online:4200", "http://pixelhotel.online:4200"],
     credentials: true,
   }),
 );

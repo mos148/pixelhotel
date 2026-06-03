@@ -34,7 +34,7 @@ export class HomeComponent implements OnInit {
           this.meNick = res.user.nickname || 'Usuario Invitado';
           this.meCreditos = res.user.creditos || 0;
 
-          this.meAvatarUrl = `http://localhost:3000/api/users/${res.user.id}/avatar?t=${new Date().getTime()}`;
+          this.meAvatarUrl = `http://79.143.94.107:3000/api/users/${res.user.id}/avatar?t=${new Date().getTime()}`;
 
           this.cdr.detectChanges();
         } else {
