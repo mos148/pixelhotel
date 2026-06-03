@@ -194,7 +194,9 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setupSocket() {
-    this.socket = io('http://79.143.94.107:3000', { withCredentials: true });
+    this.socket = io({
+  withCredentials: true
+});
 
     this.socket.on('connect', () => {
       console.log('🔗 Conectado al servidor');
