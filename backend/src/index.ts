@@ -32,12 +32,6 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "../../client")));
-
-// Servir index.html en la raíz
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "../../client/index.html"));
-});
 
 // Login
 app.post("/login", async (req, res) => {
@@ -99,7 +93,7 @@ app.post("/login", async (req, res) => {
     res.cookie("auth", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // en producción con HTTPS: true
+      secure: process.env.NODE_ENV === "production", // true en producción (HTTPS)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
 
@@ -1325,10 +1319,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Iniciar servidor
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
 // Función auxiliar para comprobar si el jugador es dueño de la sala
 async function esDuenoDeLaSala(
   userId: number,
@@ -1340,3 +1330,16 @@ async function esDuenoDeLaSala(
   );
   return res.rows.length > 0;
 }
+
+// Servir archivos estáticos DESPUÉS de todos los endpoints API
+app.use(express.static(path.join(__dirname, "../../client")));
+
+// Servir index.html en la raíz (fallback para SPA)
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(__dirname, "../../client/index.html"));
+});
+
+// Iniciar servidor
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

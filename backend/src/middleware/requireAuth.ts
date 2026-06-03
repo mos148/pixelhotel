@@ -16,9 +16,11 @@ export function requireAuth(
   next: NextFunction
 ) {
   const token = req.cookies?.auth;
+  console.log("DEBUG requireAuth:", { token: !!token, cookies: req.cookies });
 
   // 1) ¿Hay cookie?
   if (!token) {
+    console.log("DEBUG: No token found");
     return res.status(401).json({ ok: false, error: "No autenticado" });
   }
 
@@ -31,13 +33,15 @@ export function requireAuth(
   try {
     // 3) Verificar token
     const payload = jwt.verify(token, secret) as JwtPayload;
+    console.log("DEBUG: Token verified:", payload);
 
     // 4) Guardar userId para la ruta
-    req.userId = payload.userId;
+    req.userId = String(payload.userId);
 
-    // 5) Todo OK -> seguir
+    // 5) Todo OK 
     next();
-  } catch {
+  } catch (err) {
+    console.log("DEBUG: Token verification failed:", err);
     return res.status(401).json({ ok: false, error: "Token inválido o expirado" });
   }
 }
