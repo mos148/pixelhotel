@@ -116,7 +116,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
   myShoesColor: number = 0x2b2b2b;
   hairAnimations: { [key: string]: PIXI.Texture[] } = {};
   hairSprite: PIXI.AnimatedSprite | null = null;
-  myHairColor: number = 0x8B4513; 
+  myHairColor: number = 0x8b4513;
 
   // Remote Players
   otherPlayers = new Map<string, RemotePlayer>();
@@ -195,8 +195,8 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setupSocket() {
     this.socket = io({
-  withCredentials: true
-});
+      withCredentials: true,
+    });
 
     this.socket.on('connect', () => {
       console.log('🔗 Conectado al servidor');
@@ -241,8 +241,8 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
         this.shoesSprite.tint = this.myShoesColor;
       }
 
-        // Guardamos el color del cabello del jugador local para usarlo en el avatar
-      this.myHairColor = data.me.hairColor || 0x8B4513;
+      // Guardamos el color del cabello del jugador local para usarlo en el avatar
+      this.myHairColor = data.me.hairColor || 0x8b4513;
       if (this.hairSprite) {
         this.hairSprite.tint = this.myHairColor;
       }
@@ -420,14 +420,13 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
-      // Escuchamos si otro jugador cambia pelo
+    // Escuchamos si otro jugador cambia pelo
     this.socket.on('player:hair_changed', (data: { socketId: string; newColor: number }) => {
       const remote = this.otherPlayers.get(data.socketId);
       if (remote && remote.hairSprite) {
         remote.hairSprite.tint = data.newColor;
       }
     });
-
 
     // Escuchamos si nos colocan un furni en la sala (ya sea a nosotros o a otro jugador)
     this.socket.on('room:furni_placed', (furni: any) => {
@@ -642,7 +641,6 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.hairAnimations['e'] = this.extractFrames(hairTexture, 0, frameWidth, frameHeight);
     this.hairAnimations['s'] = this.extractFrames(hairTexture, 3, frameWidth, frameHeight);
     this.hairAnimations['n'] = this.extractFrames(hairTexture, 1, frameWidth, frameHeight);
-
   }
 
   // Función para recortar una fila específica del spritesheet en texturas individuales
@@ -757,7 +755,6 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.hairSprite.tint = this.myHairColor; // Aplicamos el color del pelo al sprite del pelo
     this.avatarContainer.addChild(this.hairSprite);
 
-
     // Crear bocadillo de chat (typing bubble)
     const bubble = new PIXI.Sprite(PIXI.Assets.get('/assets/bubble.png'));
     bubble.name = 'chatBubble';
@@ -794,7 +791,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.placeAvatarOnTile(0, 0);
   }
 
-  // Función para posicionar el menú del avatar sobre el avatar (centrado horizontalmente y un poco elevado)
+  // Función para posicionar el menú del avatar sobre el avatar 
   private posicionarMenu(avatarMenu: HTMLElement) {
     // Si no está abierto o no hay avatar, no hacemos nada
     if (!this.isAvatarMenuOpen || !this.avatarContainer) return;
@@ -971,14 +968,18 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
   private setupTicker() {
     if (!this.app || !this.entityLayer) return;
 
-    this.app.ticker.add(() => {
-      // Reposicionamos el menú de avatar si está abierto (para que siga al avatar mientras se mueve)
+    this.app.ticker.add((ticker) => {
+
+      const baseSpeed = 1.8;
+
+      const currentSpeed = baseSpeed * ticker.deltaTime;
+
       if (this.isAvatarMenuOpen) {
         const avatarMenu = document.getElementById('avatarMenu');
         if (avatarMenu) this.posicionarMenu(avatarMenu);
       }
 
-      // Hacemos lo mismo con el menú de otros jugadores
+
       if (this.isTargetMenuOpen) {
         const targetMenu = document.getElementById('targetMenu');
         if (targetMenu) this.posicionarMenuTarget(targetMenu);
@@ -998,7 +999,9 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
         });
       }
 
-      // Update remote players
+      // ----------------------------------------------------
+      // UPDATE REMOTE PLAYERS
+      // ----------------------------------------------------
       for (const remote of this.otherPlayers.values()) {
         // Si no hay camino (está quieto), lo ponemos en Pause
         if (!remote.path || remote.path.length === 0) {
@@ -1027,8 +1030,6 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
         }
 
         const step = remote.path[remote.stepIndex];
-
-        // Calculamos la dirección a la que debe mirar el avatar según el siguiente paso
         const dir = this.dirFromTo(remote.tileX, remote.tileY, step.x, step.y);
 
         if (dir !== remote.currentDir) {
@@ -1049,50 +1050,44 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         }
 
-        // Actualizamos la posición del contenedor del jugador remoto para que se mueva suavemente hacia el siguiente paso
         remote.shirtSprite!.x = remote.sprite.x;
         remote.shirtSprite!.y = remote.sprite.y;
-
-        // Actualizamos la posición del sprite de los pantalones para que siga al cuerpo
         remote.pantSprite!.x = remote.sprite.x;
         remote.pantSprite!.y = remote.sprite.y;
-
-        // Actualizamos la posición del sprite de los zapatos para que siga al cuerpo
         remote.shoesSprite!.x = remote.sprite.x;
         remote.shoesSprite!.y = remote.sprite.y;
-
-        // Actualizamos la posición del sprite del pelo para que siga al cuerpo
         remote.hairSprite!.x = remote.sprite.x;
         remote.hairSprite!.y = remote.sprite.y;
 
-        // Movemos el contenedor del jugador remoto hacia la posición del siguiente paso
         const p = this.tileToScreen(step.x, step.y);
-        const speed = 0.75;
         const dx = p.x - remote.container.x;
         const dy = p.y - remote.container.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < 0.8) {
+        // AQUÍ APLICAMOS LA VELOCIDAD CON DELTA TIME PARA OTROS JUGADORES
+        if (dist < currentSpeed) {
+          // Comprobamos si la distancia es menor al paso que vamos a dar
           remote.container.x = p.x;
           remote.container.y = p.y;
           remote.tileX = step.x;
           remote.tileY = step.y;
           remote.stepIndex++;
         } else {
-          remote.container.x += (dx / dist) * speed;
-          remote.container.y += (dy / dist) * speed;
+          remote.container.x += (dx / dist) * currentSpeed;
+          remote.container.y += (dy / dist) * currentSpeed;
         }
       }
 
-      // Update local avatar
+      // ----------------------------------------------------
+      // UPDATE LOCAL AVATAR
+      // ----------------------------------------------------
       if (!this.path || this.path.length === 0) {
-        // Si no hay camino, nos aseguramos de que la animación esté en el frame 0 (parado)
         if (this.avatarSprite && this.avatarSprite.playing) {
-          this.avatarSprite.gotoAndStop(0); // Detenemos la animación en la pose inicial
-          this.shirtSprite?.gotoAndStop(0); // Detenemos la animación de la camisa también
-          this.pantSprite?.gotoAndStop(0); // Detenemos la animación de los pantalones también
-          this.shoesSprite?.gotoAndStop(0); // Detenemos la animación de los zapatos también
-          this.hairSprite?.gotoAndStop(0); // Detenemos la animación del pelo también
+          this.avatarSprite.gotoAndStop(0);
+          this.shirtSprite?.gotoAndStop(0);
+          this.pantSprite?.gotoAndStop(0);
+          this.shoesSprite?.gotoAndStop(0);
+          this.hairSprite?.gotoAndStop(0);
         }
         return;
       }
@@ -1102,13 +1097,12 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
         return;
       }
 
-      // Si el avatar no está animando, arrancamos la animación de caminar
       if (this.avatarSprite && !this.avatarSprite.playing) {
-        this.avatarSprite.play(); // Arrancamos el movimiento de piernas
-        this.shirtSprite?.play(); // Arrancamos la animación de la camisa también
-        this.pantSprite?.play(); // Arrancamos la animación de los pantalones también
-        this.shoesSprite?.play(); // Arrancamos la animación de los zapatos también
-        this.hairSprite?.play(); // Arrancamos la animación del pelo también
+        this.avatarSprite.play();
+        this.shirtSprite?.play();
+        this.pantSprite?.play();
+        this.shoesSprite?.play();
+        this.hairSprite?.play();
       }
 
       const step = this.path[this.stepIndex];
@@ -1116,17 +1110,17 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
       this.setAvatarDir(dir);
 
       const p = this.tileToScreen(step.x, step.y);
-      const speed = 0.75;
       const dx = p.x - this.avatarContainer!.x;
       const dy = p.y - this.avatarContainer!.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < 0.8) {
+      // 
+      if (dist < currentSpeed) {
         this.placeAvatarOnTile(step.x, step.y);
         this.stepIndex++;
       } else {
-        this.avatarContainer!.x += (dx / dist) * speed;
-        this.avatarContainer!.y += (dy / dist) * speed;
+        this.avatarContainer!.x += (dx / dist) * currentSpeed;
+        this.avatarContainer!.y += (dy / dist) * currentSpeed;
       }
     });
   }
@@ -1291,7 +1285,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
               cierreIzq.lineTo(-this.tileW / 2 - grosorPared, -grosorPared * 0.5);
               cierreIzq.lineTo(-this.tileW / 2 - grosorPared, -grosorPared * 0.5 + grosorSuelo);
               cierreIzq.lineTo(-this.tileW / 2, grosorSuelo);
-              cierreIzq.fill({ color: colorSueloBordeDer }); 
+              cierreIzq.fill({ color: colorSueloBordeDer });
               cierreIzq.x = p.x;
               cierreIzq.y = p.y;
               this.floorLayer.addChild(cierreIzq);
@@ -1445,7 +1439,13 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.currentDir = dir;
 
-    if (this.avatarSprite && this.shirtSprite && this.pantSprite && this.shoesSprite && this.hairSprite) {
+    if (
+      this.avatarSprite &&
+      this.shirtSprite &&
+      this.pantSprite &&
+      this.shoesSprite &&
+      this.hairSprite
+    ) {
       // Cambiamos texturas de ambos a la vez
       this.avatarSprite.textures = this.avatarAnimations[dir];
       this.shirtSprite.textures = this.shirtAnimations[dir];
@@ -1557,7 +1557,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     // Aplicamos el color que nos manda Postgres
     pant.tint = p.pantColor || 0x0000ff; // Si no viene color, lo dejamos blanco
     shoes.tint = p.shoesColor || 0xffffff; // Si no viene color, lo dejamos blanco
-    hair.tint = p.hairColor || 0x8B4513; // Si no viene color, lo dejamos marron
+    hair.tint = p.hairColor || 0x8b4513; // Si no viene color, lo dejamos marron
     c.addChild(pant);
     c.addChild(shoes);
     c.addChild(hair);
@@ -1650,7 +1650,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Temporizador para el desvanecimiento
     setTimeout(() => {
-      nuevoMensaje.fadingOut = true; 
+      nuevoMensaje.fadingOut = true;
       this.cdr.detectChanges();
       // Después de que la animación de desvanecimiento termine (450ms), eliminamos el mensaje del array
       setTimeout(() => {
@@ -1705,7 +1705,9 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.friendsService.getMisAmigos().subscribe((data) => (this.misAmigos = data.amigos));
 
     // Cargamos solicitudes pendientes
-    this.friendsService.getMisSolicitudes().subscribe((data) => (this.misSolicitudes = data.requests));
+    this.friendsService
+      .getMisSolicitudes()
+      .subscribe((data) => (this.misSolicitudes = data.requests));
   }
 
   // Funciones para comprobar estado de amistad (usadas en el HTML para mostrar botones condicionales)
