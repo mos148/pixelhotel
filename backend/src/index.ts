@@ -1331,10 +1331,10 @@ async function esDuenoDeLaSala(
   return res.rows.length > 0;
 }
 
-// Servir archivos estáticos DESPUÉS de todos los endpoints API
+
 app.use(express.static(path.join(__dirname, "../../client")));
 
-// Servir index.html en la raíz (fallback para SPA)
+// Servir index.html en la raíz
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "../../client/index.html"));
 });

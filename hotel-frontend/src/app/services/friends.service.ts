@@ -5,16 +5,16 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root',
 })
 export class FriendsService {
-  private apiUrl = '/friends';
+  private apiUrl = '/api/friends';
 
   constructor(private http: HttpClient) {}
 
   getMisAmigos() {
-    return this.http.get<{ ok: boolean; amigos: any[] }>('/friends', { withCredentials: true });
+    return this.http.get<{ ok: boolean; amigos: any[] }>('/api/friends', { withCredentials: true });
   }
 
   getMisSolicitudes() {
-    return this.http.get<{ ok: boolean; requests: any[] }>('/friends/requests', {
+    return this.http.get<{ ok: boolean; requests: any[] }>('/api/friends/requests', {
       withCredentials: true,
     });
   }
@@ -30,9 +30,10 @@ export class FriendsService {
       { withCredentials: true },
     );
   }
+
   eliminarAmigo(friendId: number) {
     return this.http.post(
-      '/friends/remove',
+      '/api/friends/remove',
       { friendId },
       { withCredentials: true },
     );
