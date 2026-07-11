@@ -24,7 +24,15 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:4200", "http://79.143.94.107", "http://79.143.94.107:4200", "http://pixelhotel.online", "http://www.pixelhotel.online", "http://www.pixelhotel.online:4200", "http://pixelhotel.online:4200"],
+    origin: [
+      "http://localhost:4200",
+      "http://79.143.94.107",
+      "http://79.143.94.107:4200",
+      "http://pixelhotel.online",
+      "http://www.pixelhotel.online",
+      "http://www.pixelhotel.online:4200",
+      "http://pixelhotel.online:4200",
+    ],
     credentials: true,
   }),
 );
@@ -238,7 +246,9 @@ app.get("/friends/requests", requireAuth, async (req, res) => {
     res.json({ ok: true, requests: result.rows });
   } catch (err) {
     console.error("ERROR EN SOLICITUDES:", err);
-    res.status(500).json({ ok: false, error: "No se pudieron cargar solicitudes" });
+    res
+      .status(500)
+      .json({ ok: false, error: "No se pudieron cargar solicitudes" });
   }
 });
 
@@ -363,7 +373,7 @@ app.get("/users/:id/avatar", async (req, res) => {
       pant: 16777215,
       shirt: 16777215,
       shoes: 16777215,
-      hair: 0x8B4513,
+      hair: 0x8b4513,
     };
 
     const assetsPath = path.join(__dirname, "../assets");
@@ -532,16 +542,35 @@ io.on("connection", (socket) => {
   console.log("user connected:", socket.id);
   broadcastOnlineCount();
 
+// --- ENVÍO DE MENSAJES (Con Proximidad) ---
   socket.on("chat:send", (payload) => {
-    // Buscamos al jugador primero
-    const p = players.get(socket.id);
-    if (!p) return;
+    const sender = players.get(socket.id);
+    if (!sender) return;
 
-    io.to(`room:${p.roomId}`).emit("chat:msg", {
-      text: payload?.text ?? "",
-      nickname: payload?.nickname ?? "???",
-      at: Date.now(),
-    });
+    const radioEscucha = 3; 
+    console.log(`\n💬 [CHAT] ${sender.nickname} ha hablado desde (${sender.x}, ${sender.y})`);
+
+    for (const [targetSocketId, targetPlayer] of players.entries()) {
+      if (targetPlayer.roomId === sender.roomId) {
+        
+        const dx = targetPlayer.x - sender.x;
+        const dy = targetPlayer.y - sender.y;
+        const distancia = Math.sqrt(dx * dx + dy * dy);
+
+        console.log(`   -> Distancia a ${targetPlayer.nickname} (${targetPlayer.x}, ${targetPlayer.y}): ${distancia.toFixed(2)} baldosas`);
+
+        if (distancia <= radioEscucha) {
+          console.log(`   ✅ Enviado a ${targetPlayer.nickname}`);
+          io.to(targetSocketId).emit("chat:msg", {
+            text: payload?.text ?? "",
+            nickname: payload?.nickname ?? "???",
+            at: Date.now(),
+          });
+        } else {
+          console.log(`   ❌ Bloqueado para ${targetPlayer.nickname} (Muy lejos)`);
+        }
+      }
+    }
   });
 
   // Indicador de escritura (typing)
@@ -651,7 +680,6 @@ io.on("connection", (socket) => {
     const shoesColor = result.rows[0]?.avatar_config?.shoes;
     const hairColor = result.rows[0]?.avatar_config?.hair;
     const creditos = result.rows[0]?.creditos ?? 0;
-
 
     // Por defecto, todos entran a la sala 1 (Lobby)
     const roomId = 1;
@@ -1331,7 +1359,6 @@ async function esDuenoDeLaSala(
   return res.rows.length > 0;
 }
 
-
 app.use(express.static(path.join(__dirname, "../../client")));
 
 // Servir index.html en la raíz
@@ -1342,4 +1369,5 @@ app.get("/", (_req, res) => {
 // Iniciar servidor
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀🚀🚀 ¡¡¡BACKEND NUEVO REINICIADO CON ÉXITO!!! 🚀🚀🚀`);
 });

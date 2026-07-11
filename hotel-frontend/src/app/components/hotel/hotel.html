@@ -99,7 +99,7 @@
   <div id="avatarMenu" *ngIf="isAvatarMenuOpen" class="avatar-menu">
     <div class="menu-header">Acciones</div>
     <button (click)="abrirRopa()">👕 Mi Ropa</button>
-    <button (click)="bailar()" >💃 Bailar</button>
+    <button (click)="bailar()">💃 Bailar</button>
   </div>
   <div id="targetMenu" *ngIf="isTargetMenuOpen" class="avatar-menu target-menu">
     <div class="menu-header">{{ targetName }}</div>
@@ -141,8 +141,8 @@
       />
     </div>
   }
-  <button class="btn-tienda" (click)="isShopOpen = true">🛒 Tienda ({{ misCreditos }}c)</button>
 
+  <button class="btn-tienda" (click)="isShopOpen = true">🛒 Tienda ({{ misCreditos }}c)</button>
 
   <div *ngIf="isFurniSelectedMenuOpen" class="furni-action-menu">
     <div class="furni-action-header">
@@ -156,14 +156,44 @@
     </div>
   </div>
 
-  <div id="chatFeed" class="chat-feed" aria-live="polite">
-    @for (msg of mensajesChat; track msg.id) {
-      <div class="chatMsg" [class.fadeOut]="msg.fadingOut">
-        <span class="name">{{ msg.nickname }}:</span>
-        <span class="text">{{ msg.text }}</span>
+  <div class="chat-sidebar" *ngIf="!isLoading">
+    <div class="chat-sidebar-header">
+      <span>Historial de la Sala</span>
+    </div>
+    <div class="chat-sidebar-messages" #sidebarChatFeed>
+      <div *ngFor="let msg of mensajesHistorial" class="sidebar-msg">
+        <strong class="msg-author">{{ msg.nickname }}:</strong>
+        <span class="msg-text">{{ msg.text }}</span>
       </div>
-    }
+    </div>
   </div>
+
+<div
+    id="bocadillo-local"
+    *ngIf="avatarTextoChat && avatarContainer"
+    class="bocadillo-fijo"
+    [style.left.px]="avatarContainer.getGlobalPosition().x"
+    [style.top.px]="avatarContainer.getGlobalPosition().y - 110"
+  >
+    <span class="bocadillo-text">{{ avatarTextoChat }}</span>
+    <div class="bocadillo-flecha"></div>
+  </div>
+
+  @for (player of otherPlayers.values(); track player.socketId) {
+    <div
+      [id]="'bocadillo-' + player.socketId"
+      *ngIf="player.textoChat && player.container"
+      class="bocadillo-fijo"
+      [style.left.px]="player.container.getGlobalPosition().x"
+      [style.top.px]="player.container.getGlobalPosition().y - 110"
+    >
+      <span class="bocadillo-text">
+      {{ player.textoChat }}
+      </span>
+      <div class="bocadillo-flecha"></div>
+    </div>
+  }
+  
 
   <div id="chatBar" class="chat-bar">
     <input
@@ -177,10 +207,9 @@
     />
   </div>
 
-<div id="onlineHud">
-  Jugadores Online: {{ onlineCount !== undefined ? onlineCount : 0 }}
+  <div id="onlineHud">Jugadores Online: {{ onlineCount !== undefined ? onlineCount : 0 }}</div>
 </div>
-</div>
+
 <app-friends-list (onSusurrar)="abrirChatPrivado($event)" (onSeguir)="seguirJugador($event)">
 </app-friends-list>
 <app-avatar-editor

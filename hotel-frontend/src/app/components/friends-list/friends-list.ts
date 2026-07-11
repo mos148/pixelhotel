@@ -13,7 +13,7 @@ export class FriendsListComponent {
   amigos: any[] = [];
   solicitudes: any[] = [];
 
-  // Eventos para comunicar al componente padre (hotel) que queremos susurrar o seguir a alguien
+  // Eventos para comunicar al componente padre que queremos susurrar o seguir a alguien
   @Output() onSusurrar = new EventEmitter<string>();
   @Output() onSeguir = new EventEmitter<string>();
 

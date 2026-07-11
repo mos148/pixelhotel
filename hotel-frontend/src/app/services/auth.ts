@@ -1,25 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
   // Método para el Login
   login(datos: any): Observable<any> {
-  
     return this.http.post(`${this.apiUrl}/login`, datos, { withCredentials: true });
   }
 
   // Método para el Registro
   register(userData: any): Observable<any> {
-    // Esto conecta directamente con tu endpoint app.post("/register")
-    return this.http.post(`${this.apiUrl}/register`, userData);
+    // Añadido withCredentials por seguridad para el manejo de sesiones futuras
+    return this.http.post(`${this.apiUrl}/register`, userData, { withCredentials: true });
   }
 
   // Método para verificar si el usuario sigue logueado

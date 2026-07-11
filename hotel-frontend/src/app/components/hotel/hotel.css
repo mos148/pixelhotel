@@ -507,9 +507,9 @@
   border-bottom-left-radius: 2px;
 }
 
-/* Forzamos el color del texto para que no salga blanco */
+
 .msg-text {
-  color: #111111 !important;
+  color: white;
   font-size: 13px;
   word-wrap: break-word;
 }
@@ -616,3 +616,105 @@
 }
 .furni-action-body button:hover { background: #ddd; }
 .btn-disabled { opacity: 0.5; cursor: not-allowed !important; }
+
+.chat-sidebar {
+  position: absolute;
+  top: 150px;
+  right: 20px;
+  width: 280px;
+  height: calc(70vh - 120px);
+  background: rgba(0, 0, 0, 0.75);
+  border: 2px solid #555;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  font-family: 'Arial', sans-serif;
+  color: white;
+  pointer-events: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.chat-sidebar-header {
+  padding: 10px;
+  background: #2b2b2b;
+  border-bottom: 1px solid #555;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.chat-sidebar-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-msg {
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-word;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.msg-author {
+  color: #ffb74d;
+  margin-right: 5px;
+}
+
+.msg-text {
+  color: #ffffff;
+
+}
+
+.bocadillo-fijo {
+  position: absolute;
+  transform: translate(-50%, -50%); 
+  background: white;
+  color: black;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 2px solid #000;
+  max-width: 200px;
+  word-break: break-word;
+  font-family: 'Arial', sans-serif;
+  font-size: 13px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  z-index: 99999;
+  pointer-events: none; 
+}
+
+.bocadillo-text strong {
+  color: #333;
+}
+
+.bocadillo-flecha {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #000; 
+}
+
+.bocadillo-flecha::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid white; 
+}

@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FriendsService {
-  private apiUrl = '/api/friends';
+  private apiUrl = `${environment.apiUrl}/friends`;
 
   constructor(private http: HttpClient) {}
 
   getMisAmigos() {
-    return this.http.get<{ ok: boolean; amigos: any[] }>('/api/friends', { withCredentials: true });
+    return this.http.get<{ ok: boolean; amigos: any[] }>(`${this.apiUrl}`, { withCredentials: true });
   }
 
   getMisSolicitudes() {
-    return this.http.get<{ ok: boolean; requests: any[] }>('/api/friends/requests', {
+    return this.http.get<{ ok: boolean; requests: any[] }>(`${this.apiUrl}/requests`, {
       withCredentials: true,
     });
   }
@@ -33,7 +34,7 @@ export class FriendsService {
 
   eliminarAmigo(friendId: number) {
     return this.http.post(
-      '/api/friends/remove',
+      `${this.apiUrl}/remove`,
       { friendId },
       { withCredentials: true },
     );

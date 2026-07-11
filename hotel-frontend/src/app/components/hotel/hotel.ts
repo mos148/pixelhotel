@@ -21,8 +21,10 @@ import { FriendsService } from '../../services/friends.service';
 import { AvatarEditorComponent } from '../avatar-editor/avatar-editor';
 import { ShopComponent } from '../shop/shop';
 import { InventoryComponent } from '../inventory/inventory';
+import { environment } from '../../../environments/environment';
 
 interface RemotePlayer {
+  socketId: string; 
   container: PIXI.Container;
   sprite: PIXI.AnimatedSprite;
   shirtSprite?: PIXI.AnimatedSprite;
@@ -35,6 +37,7 @@ interface RemotePlayer {
   path: any[];
   stepIndex: number;
   typingBubble?: PIXI.Sprite;
+  textoChat?: string; 
 }
 
 // Define la estructura de un mensaje
@@ -73,6 +76,8 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Chat
   mensajesChat: ChatMessage[] = [];
+  mensajesHistorial: { nickname: string, text: string }[] = [];
+  @ViewChild('sidebarChatFeed') private sidebarChatFeed!: ElementRef; 
   private mensajeId = 0; // Para dar un ID único a cada mensaje
 
   // User Data
@@ -98,6 +103,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
   // Avatar Local
   avatarTileX = 0;
   avatarTileY = 0;
+  avatarTextoChat: string = ''; 
   avatarContainer: PIXI.Container | null = null;
   path: any[] = [];
   stepIndex = 0;
@@ -194,7 +200,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setupSocket() {
-    this.socket = io({
+    this.socket = io(environment.socketUrl, {
       withCredentials: true,
     });
 
@@ -263,6 +269,8 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
       this.otherPlayers.forEach((p) => p.container.destroy({ children: true }));
       this.otherPlayers.clear();
       if (this.entityLayer) this.entityLayer.removeChildren();
+
+      this.mensajesHistorial = [];
 
       // Redibujamos el nuevo mapa
       this.drawRoom(data.width, data.height);
@@ -791,7 +799,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.placeAvatarOnTile(0, 0);
   }
 
-  // Función para posicionar el menú del avatar sobre el avatar 
+  // Función para posicionar el menú del avatar sobre el avatar
   private posicionarMenu(avatarMenu: HTMLElement) {
     // Si no está abierto o no hay avatar, no hacemos nada
     if (!this.isAvatarMenuOpen || !this.avatarContainer) return;
@@ -969,7 +977,6 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.app || !this.entityLayer) return;
 
     this.app.ticker.add((ticker) => {
-
       const baseSpeed = 1.8;
 
       const currentSpeed = baseSpeed * ticker.deltaTime;
@@ -978,7 +985,6 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
         const avatarMenu = document.getElementById('avatarMenu');
         if (avatarMenu) this.posicionarMenu(avatarMenu);
       }
-
 
       if (this.isTargetMenuOpen) {
         const targetMenu = document.getElementById('targetMenu');
@@ -1076,6 +1082,15 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
           remote.container.x += (dx / dist) * currentSpeed;
           remote.container.y += (dy / dist) * currentSpeed;
         }
+
+        if (remote.textoChat) {
+          const bocadilloRemoto = document.getElementById('bocadillo-' + remote.socketId);
+          if (bocadilloRemoto && remote.container) {
+            const pos = remote.container.getGlobalPosition();
+            bocadilloRemoto.style.left = pos.x + 'px';
+            bocadilloRemoto.style.top = (pos.y - 110) + 'px';
+          }
+        }
       }
 
       // ----------------------------------------------------
@@ -1114,13 +1129,22 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
       const dy = p.y - this.avatarContainer!.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // 
+      //
       if (dist < currentSpeed) {
         this.placeAvatarOnTile(step.x, step.y);
         this.stepIndex++;
       } else {
         this.avatarContainer!.x += (dx / dist) * currentSpeed;
         this.avatarContainer!.y += (dy / dist) * currentSpeed;
+      }
+
+      if (this.avatarTextoChat && this.avatarContainer) {
+        const bocadilloLocal = document.getElementById('bocadillo-local');
+        if (bocadilloLocal) {
+          const pos = this.avatarContainer.getGlobalPosition();
+          bocadilloLocal.style.left = pos.x + 'px';
+          bocadilloLocal.style.top = (pos.y - 110) + 'px';
+        }
       }
     });
   }
@@ -1593,6 +1617,7 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
     this.entityLayer.addChild(c);
 
     this.otherPlayers.set(p.socketId, {
+      socketId: p.socketId, 
       container: c,
       sprite: s, // Lo guardamos aquí para poder darle Play luego
       currentDir: 's', // Iniciamos mirando al Sur
@@ -1621,44 +1646,85 @@ export class HotelComponent implements OnInit, OnDestroy, AfterViewInit {
   // CHAT METHODS (Funciones de chat)
   // ==========================================
   enviarMensaje(texto: string) {
-    // 1. Evitamos que se envíen mensajes vacíos
     if (!texto || texto.trim() === '') return;
 
-    // 2. Aquí llamamos a tu método.
     this.pushChatMessage(texto, 'Yo');
 
-    this.socket!.emit('chatMessage', texto);
+    console.log('💻 [FRONTEND] Emitiendo chat:send al servidor...');
+
+    this.socket!.emit('chat:send', {
+      text: texto,
+      nickname: this.myNickname,
+    });
+  }
+
+  // Función auxiliar para obtener el nombre de un jugador remoto
+  obtenerNombreRemoto(player: any): string {
+    const textObject = player.container.children.find((c: any) => c instanceof PIXI.Text);
+    return textObject ? textObject.text : 'User';
   }
 
   // Función para añadir un mensaje al chat
-  private pushChatMessage(text: string, nickname: string) {
-    // Creamos el objeto del mensaje
-    const nuevoMensaje: ChatMessage = {
-      id: this.mensajeId++,
-      nickname: nickname,
-      text: text,
-      fadingOut: false,
-    };
-
-    //  Lo añadimos al array
-    this.mensajesChat.push(nuevoMensaje);
-
-    // Controlamos el límite de 6 mensajes (borramos el más viejo)
-    if (this.mensajesChat.length > 6) {
-      this.mensajesChat.shift();
+ private pushChatMessage(text: string, nickname: string) {
+    // 1. Siempre lo añadimos al panel de historial derecho permanente
+    this.mensajesHistorial.push({ nickname, text });
+    if (this.mensajesHistorial.length > 100) { 
+      this.mensajesHistorial.shift();
     }
+    this.scrollToBottom();
 
-    // Temporizador para el desvanecimiento
-    setTimeout(() => {
-      nuevoMensaje.fadingOut = true;
+    // 2. Lógica del bocadillo sobre la cabeza (Solo el último mensaje pegado al avatar)
+    if (nickname === this.myNickname || nickname === 'Yo') {
+      // Mensaje del jugador LOCAL (Tú)
+      this.avatarTextoChat = text;
       this.cdr.detectChanges();
-      // Después de que la animación de desvanecimiento termine (450ms), eliminamos el mensaje del array
-      setTimeout(() => {
-        this.mensajesChat = this.mensajesChat.filter((m) => m.id !== nuevoMensaje.id);
-      }, 450);
-    }, 6000);
 
-    this.cdr.detectChanges();
+      // A los 5 segundos exactos, borramos el bocadillo
+      setTimeout(() => {
+        if (this.avatarTextoChat === text) { // Seguridad por si has escrito otro mensaje entre medias
+          this.avatarTextoChat = '';
+          this.cdr.detectChanges();
+        }
+      }, 5000);
+
+    } else {
+      // Mensaje de un JUGADOR REMOTO
+      // Buscamos cuál de todos los jugadores de la sala tiene este nickname
+      let remotoEncontrado: RemotePlayer | null = null;
+      for (const remote of this.otherPlayers.values()) {
+        // Obtenemos el texto del label del contenedor para comparar el nombre real
+        const textObject = remote.container.children.find(c => c instanceof PIXI.Text) as PIXI.Text | undefined;
+        if (textObject && textObject.text === nickname) {
+          remotoEncontrado = remote;
+          break;
+        }
+      }
+
+      // Si lo encontramos, le plantamos el texto en su propiedad
+      if (remotoEncontrado) {
+        remotoEncontrado.textoChat = text;
+        this.cdr.detectChanges();
+
+        // A los 5 segundos exactos, se lo quitamos
+        setTimeout(() => {
+          if (remotoEncontrado && remotoEncontrado.textoChat === text) {
+            remotoEncontrado.textoChat = '';
+            this.cdr.detectChanges();
+          }
+        }, 5000);
+      }
+    }
+  } 
+
+  // Función para hacer scroll automático en el historial
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      try {
+        if (this.sidebarChatFeed) {
+          this.sidebarChatFeed.nativeElement.scrollTop = this.sidebarChatFeed.nativeElement.scrollHeight;
+        }
+      } catch (err) {}
+    }, 50);
   }
 
   // ==========================================
