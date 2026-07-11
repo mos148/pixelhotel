@@ -29,6 +29,8 @@ app.use(
       "http://79.143.94.107",
       "http://79.143.94.107:4200",
       "http://pixelhotel.online",
+      "https://pixelhotel.online",
+      "https://www.pixelhotel.online",
       "http://www.pixelhotel.online",
       "http://www.pixelhotel.online:4200",
       "http://pixelhotel.online:4200",
@@ -42,7 +44,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Login
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body ?? {};
 
@@ -116,7 +118,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/register", async (req, res) => {
+app.post("/api/register", async (req, res) => {
   try {
     const body = req.body as Partial<RegisterBody>;
 
@@ -164,13 +166,13 @@ app.post("/register", async (req, res) => {
 });
 
 // Logout: borrar cookie
-app.post("/logout", (_req, res) => {
+app.post("/api/logout", (_req, res) => {
   res.clearCookie("auth");
   return res.json({ ok: true });
 });
 
 // Ruta para enviar solicitud de amistad o aceptarla
-app.post("/friends/request", requireAuth, async (req, res) => {
+app.post("/api/friends/request", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   const { friendId } = req.body;
 
@@ -202,7 +204,7 @@ app.post("/friends/request", requireAuth, async (req, res) => {
 });
 
 // Obtener lista de amigos (relaciones aceptadas)
-app.get("/friends", requireAuth, async (req, res) => {
+app.get("/api/friends", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   try {
     const query = `
@@ -230,7 +232,7 @@ app.get("/friends", requireAuth, async (req, res) => {
 });
 
 //  Ver solicitudes pendientes que tengo
-app.get("/friends/requests", requireAuth, async (req, res) => {
+app.get("/api/friends/requests", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   try {
     // Buscamos solo donde tú eres el RECEPTOR (friend_id) y está pendiente
@@ -253,7 +255,7 @@ app.get("/friends/requests", requireAuth, async (req, res) => {
 });
 
 // Aceptar o Denegar solicitud de amistad
-app.post("/friends/action", requireAuth, async (req, res) => {
+app.post("/api/friends/action", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   const { friendshipId, action } = req.body;
 
@@ -275,7 +277,7 @@ app.post("/friends/action", requireAuth, async (req, res) => {
 });
 
 // --- ELIMINAR AMIGO ---
-app.post("/friends/remove", requireAuth, async (req, res) => {
+app.post("/api/friends/remove", requireAuth, async (req, res) => {
   const userId = Number((req as any).userId);
   const { friendId } = req.body;
 
@@ -295,7 +297,7 @@ app.post("/friends/remove", requireAuth, async (req, res) => {
 });
 
 // Ruta reutilizable para consultar el estado de relación con cualquier usuario
-app.get("/users/status/:id", requireAuth, async (req, res) => {
+app.get("/api/users/status/:id", requireAuth, async (req, res) => {
   const myId = Number((req as any).userId);
   const targetId = Number(req.params.id);
 
@@ -323,7 +325,7 @@ app.get("/users/status/:id", requireAuth, async (req, res) => {
 });
 
 // Ruta protegida de ejemplo
-app.get("/protected", requireAuth, (req, res) => {
+app.get("/api/protected", requireAuth, (req, res) => {
   res.json({
     ok: true,
     message: "Acceso permitido",
@@ -332,7 +334,7 @@ app.get("/protected", requireAuth, (req, res) => {
 });
 
 // Obtener datos del usuario logueado
-app.get("/me", requireAuth, async (req, res) => {
+app.get("/api/me", requireAuth, async (req, res) => {
   try {
     const userId = (req as any).userId;
 
@@ -356,7 +358,7 @@ app.get("/me", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/users/:id/avatar", async (req, res) => {
+app.get("/api/users/:id/avatar", async (req, res) => {
   try {
     const userId = req.params.id;
 
