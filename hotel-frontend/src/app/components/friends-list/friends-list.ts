@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { FriendsService } from '../../services/friends.service';
 
 @Component({
@@ -17,7 +17,7 @@ export class FriendsListComponent {
   @Output() onSusurrar = new EventEmitter<string>();
   @Output() onSeguir = new EventEmitter<string>();
 
-  constructor(private friendsService: FriendsService) {}
+  constructor(private friendsService: FriendsService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarAmigos();
@@ -37,11 +37,13 @@ export class FriendsListComponent {
       },
       error: (err) => console.error('Error:', err),
     });
+    this.cdr.detectChanges();
   }
 
   cargarSolicitudes() {
     this.friendsService.getMisSolicitudes().subscribe((data) => {
       this.solicitudes = data.requests;
+      this.cdr.detectChanges(); 
     });
   }
 
